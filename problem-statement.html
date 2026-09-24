@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AIOps Challenge 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap">
+<style>
+  :root {
+    --ground: #F8FAFC;
+    --sheet: #FFFFFF;
+    --ink: #0F172A;
+    --muted: #475569;
+    --faint: #64748B;
+    --hairline: #E2E8F0;
+    --accent: #2563EB;
+    --accent-soft: #EFF6FF;
+    --accent-edge: #BFDBFE;
+    --brand: #1534C2;
+    --code-bg: #F1F5F9;
+    --code-ink: #1E293B;
+    --code-key: #1D4ED8;
+    --warn-bg: #FFFBEB;
+    --warn-edge: #FCD34D;
+    --warn-ink: #92400E;
+    --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --ground: #0B1220;
+      --sheet: #111A2C;
+      --ink: #E2E8F0;
+      --muted: #A7B3C6;
+      --faint: #8593A8;
+      --hairline: #22304A;
+      --accent: #60A5FA;
+      --accent-soft: #13233F;
+      --accent-edge: #2A4A7E;
+      --brand: #7C93FF;
+      --code-bg: #0A1426;
+      --code-ink: #D5DEEA;
+      --code-key: #93C5FD;
+      --warn-bg: #2A2110;
+      --warn-edge: #8A6A1F;
+      --warn-ink: #FCD34D;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --ground: #0B1220;
+    --sheet: #111A2C;
+    --ink: #E2E8F0;
+    --muted: #A7B3C6;
+    --faint: #8593A8;
+    --hairline: #22304A;
+    --accent: #60A5FA;
+    --accent-soft: #13233F;
+    --accent-edge: #2A4A7E;
+    --brand: #7C93FF;
+    --code-bg: #0A1426;
+    --code-ink: #D5DEEA;
+    --code-key: #93C5FD;
+    --warn-bg: #2A2110;
+    --warn-edge: #8A6A1F;
+    --warn-ink: #FCD34D;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+    padding-inline: 20px;
+    padding-block: 32px 64px;
+  }
+  .page { max-width: 1120px; margin: 0 auto; }
+
+  /* ── Masthead ───────────────────────────────────────────── */
+  .masthead {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 18px;
+    align-items: center;
+    padding-block-end: 28px;
+    border-bottom: 1px solid var(--hairline);
+    margin-block-end: 36px;
+  }
+  .mark { width: 52px; height: 52px; color: var(--brand); }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 2px;
+  }
+  h1 {
+    font-size: clamp(28px, 4vw, 40px);
+    line-height: 1.15;
+    font-weight: 700;
+    letter-spacing: -0.015em;
+    margin: 0;
+    text-wrap: balance;
+  }
+  .confidential {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    align-items: center;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 2px 10px;
+    border: 1px solid var(--warn-edge);
+    background: var(--warn-bg);
+    color: var(--warn-ink);
+    border-radius: 999px;
+    font-weight: 600;
+    font-size: 12px;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── Two-column body ────────────────────────────────────── */
+  .layout {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    gap: 56px;
+    align-items: start;
+  }
+  nav.toc {
+    position: sticky;
+    top: calc(env(safe-area-inset-top, 0px) + 24px);
+    font-size: 14px;
+  }
+  .toc-label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin: 0 0 10px;
+  }
+  .toc ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+  .toc a {
+    display: grid;
+    grid-template-columns: 22px 1fr;
+    padding: 6px 8px;
+    border-radius: 6px;
+    color: var(--muted);
+    text-decoration: none;
+    line-height: 1.35;
+  }
+  .toc a span { color: var(--faint); font-variant-numeric: tabular-nums; }
+  .toc a:hover { background: var(--accent-soft); color: var(--ink); }
+  .toc a:focus-visible, a:focus-visible, button:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  main { min-width: 0; max-width: 72ch; }
+  section { scroll-margin-top: 24px; }
+  section + section { margin-top: 48px; padding-top: 40px; border-top: 1px solid var(--hairline); }
+  h2 {
+    font-size: 24px;
+    line-height: 1.25;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0 0 16px;
+    text-wrap: balance;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--accent);
+  }
+  h3 {
+    font-size: 17px;
+    line-height: 1.35;
+    font-weight: 600;
+    margin: 32px 0 10px;
+    text-wrap: balance;
+  }
+  p { margin: 0 0 14px; }
+  .lead { font-size: 17px; color: var(--ink); }
+  .muted { color: var(--muted); }
+  strong { font-weight: 600; }
+  a { color: var(--accent); }
+
+  code, .inline-code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--code-bg);
+    color: var(--code-ink);
+    padding: 1px 6px;
+    border-radius: 4px;
+    white-space: nowrap;
+  }
+
+  ol.steps, ul.plain { margin: 0 0 16px; padding-left: 22px; display: grid; gap: 6px; }
+  ol.steps li::marker { color: var(--accent); font-weight: 600; font-variant-numeric: tabular-nums; }
+  ul.plain li::marker { color: var(--faint); }
+
+  .principle {
+    margin: 22px 0 6px;
+    padding: 18px 20px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-edge);
+    border-radius: 10px;
+  }
+  .principle .tag {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin: 0 0 6px;
+  }
+  .principle p:last-child { margin: 0; }
+  .principle .claim { font-size: 19px; font-weight: 600; line-height: 1.35; margin: 0 0 8px; }
+
+  /* ── Code blocks ────────────────────────────────────────── */
+  .code {
+    position: relative;
+    margin: 10px 0 20px;
+    border: 1px solid var(--hairline);
+    border-radius: 8px;
+    background: var(--code-bg);
+  }
+  .code-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 12px;
+    border-bottom: 1px solid var(--hairline);
+    font-size: 12px;
+    color: var(--faint);
+    font-family: var(--mono);
+  }
+  pre {
+    margin: 0;
+    padding: 14px 16px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--code-ink);
+    tab-size: 2;
+  }
+  pre .k { color: var(--code-key); }
+  pre .c { color: var(--faint); }
+
+  button.copy {
+    font: 500 12px var(--sans);
+    color: var(--accent);
+    background: transparent;
+    border: 1px solid var(--accent-edge);
+    border-radius: 6px;
+    padding: 4px 10px;
+    min-height: 28px;
+    cursor: pointer;
+  }
+  button.copy:hover { background: var(--accent-soft); }
+
+  /* ── Streams table ──────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; margin: 10px 0 20px; border: 1px solid var(--hairline); border-radius: 8px; background: var(--sheet); }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; }
+  th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--hairline); vertical-align: top; }
+  tr:last-child td { border-bottom: 0; }
+  th { font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--faint); background: var(--ground); }
+  td.url { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+  td.dim { font-family: var(--mono); font-weight: 500; white-space: nowrap; }
+
+  .components { display: grid; gap: 12px; margin-top: 8px; }
+  .component {
+    background: var(--sheet);
+    border: 1px solid var(--hairline);
+    border-radius: 10px;
+    padding: 18px 20px;
+  }
+  .component h3 { margin: 0 0 8px; display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
+  .component h3 .n {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    border: 1px solid var(--accent-edge);
+    border-radius: 999px;
+    padding: 0 8px;
+  }
+  .component p:last-child, .component ul:last-child { margin-bottom: 0; }
+
+  footer {
+    margin-top: 56px;
+    padding-top: 20px;
+    border-top: 1px solid var(--hairline);
+    font-size: 13px;
+    color: var(--faint);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  @media (max-width: 860px) {
+    .layout { grid-template-columns: minmax(0, 1fr); gap: 24px; }
+    nav.toc { position: static; border: 1px solid var(--hairline); border-radius: 10px; padding: 14px; background: var(--sheet); }
+    .toc ol { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
+    main { max-width: none; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    html { scroll-behavior: smooth; }
+  }
+</style>
+
+</head>
+<body>
+<div class="page">
+  <header class="masthead">
+    <svg class="mark" viewBox="0 1.5 48 48" aria-hidden="true" focusable="false">
+      <g transform="translate(-500 -129)" fill="currentColor">
+        <path transform="matrix(1.06944 0 0 1 500 129.025)" d="M42.3518 25.5491 33.6177 25.5491C33.1814 25.5491 32.8282 25.9023 32.8282 26.3386L32.8282 35.0673C32.8282 35.5036 32.475 35.8568 32.0386 35.8568L13.1223 35.8568C12.6859 35.8568 12.3327 35.5036 12.3327 35.0673L12.3327 15.9095C12.3327 15.4732 12.6859 15.12 13.1223 15.12L21.8318 15.12C22.2682 15.12 22.6214 14.7668 22.6214 14.3305L22.6214 5.57045C22.6214 5.13409 22.2682 4.78091 21.8318 4.78091L13.0977 4.78091C12.6614 4.78091 12.3082 5.13409 12.3082 5.57045L12.3082 14.0427C12.3082 14.4791 11.955 14.8323 11.5186 14.8323L2.80909 14.8323C2.37273 14.8323 2.01955 15.1855 2.01955 15.6218L2.01955 45.3805C2.01955 45.8168 2.37273 46.17 2.80909 46.17L32.0659 46.17C32.5023 46.17 32.8555 45.8168 32.8555 45.3805L32.8555 36.6791C32.8555 36.2427 33.2086 35.8895 33.645 35.8895L42.3518 35.8895C42.7882 35.8895 43.1414 35.5364 43.1414 35.1L43.1414 26.34C43.1414 25.9036 42.7882 25.5505 42.3518 25.5505Z"/>
+        <path transform="matrix(1.06944 0 0 1 500 129.025)" d="M22.4945 15.9532 22.4945 24.7132C22.4945 25.1495 22.8477 25.5027 23.2841 25.5027L32.0182 25.5027C32.4545 25.5027 32.8077 25.1495 32.8077 24.7132L32.8077 16.1073C32.8077 15.6709 33.1609 15.3177 33.5973 15.3177L42.2032 15.3177C42.6395 15.3177 42.9927 14.9645 42.9927 14.5282L42.9927 5.76955C42.9927 5.33318 42.6395 4.98 42.2032 4.98L33.4691 4.98C33.0327 4.98 32.6795 5.33318 32.6795 5.76955L32.6795 14.3755C32.6795 14.8118 32.3264 15.165 31.89 15.165L23.2841 15.165C22.8477 15.165 22.4945 15.5182 22.4945 15.9545Z"/>
+      </g>
+    </svg>
+    <div>
+      <p class="eyebrow">Ensylon AIOps Challenge 2026</p>
+      <h1>Technical Problem Statement</h1>
+    </div>
+    <div class="confidential">
+      <span class="badge">Confidential</span>
+      <span>For registered participants only</span>
+    </div>
+  </header>
+
+  <div class="layout">
+    <nav class="toc" aria-label="Contents">
+      <p class="toc-label">Contents</p>
+      <ol>
+        <li><a href="#background"><span>1</span>Background</a></li>
+        <li><a href="#problem"><span>2</span>Problem Statement</a></li>
+        <li><a href="#sources"><span>3</span>Signal Sources</a></li>
+        <li><a href="#schema"><span>4</span>Canonical Signal Schema</a></li>
+        <li><a href="#simulator"><span>5</span>The Signal Simulator</a></li>
+        <li><a href="#reference"><span>6</span>Reference Data</a></li>
+        <li><a href="#build"><span>7</span>What You Must Build</a></li>
+        <li><a href="#submission"><span>8</span>Submission</a></li>
+      </ol>
+    </nav>
+
+    <main>
+      <section id="background">
+        <h2><span class="num">01</span>Background</h2>
+        <p class="lead">Modern cloud-hosted applications generate thousands of signals every minute — metric anomalies, application error logs and monitoring alerts. When something goes wrong, these signals arrive in a flood.</p>
+        <p>The same underlying problem can simultaneously trigger a metric spike, a burst of application error logs and a downstream latency alert. An on-call engineer currently sees dozens of separate signals and must work out by hand that they describe one incident, not many.</p>
+        <p>Ensylon is building an AIOps layer that groups correlated signals into a single actionable incident, scores it by impact and confidence, and drafts a structured incident ticket for human review and approval before it is raised.</p>
+        <p><strong>Your challenge is to build a working prototype of this system in 24 hours.</strong></p>
+      </section>
+
+      <section id="problem">
+        <h2><span class="num">02</span>Problem Statement</h2>
+        <p>Given a continuous stream of raw signals from three monitoring sources, build a system that:</p>
+        <ol class="steps">
+          <li><strong>Ingests and parses</strong> raw signals from each source format</li>
+          <li><strong>Redacts PII</strong> — strips or replaces all personal information before any further processing or storage</li>
+          <li><strong>Normalises</strong> each signal into a common canonical schema</li>
+          <li><strong>Detects anomalies</strong> within each normalised signal</li>
+          <li><strong>Correlates</strong> anomalous signals into candidate incident clusters using multi-dimensional evidence</li>
+          <li><strong>Validates</strong> candidate clusters before accepting them as real incidents</li>
+          <li><strong>Scores</strong> each accepted incident by impact severity and correlation confidence</li>
+          <li><strong>Drafts</strong> a structured incident ticket using the Claude API and submits it for human review — a ticket must not be published without explicit human approval</li>
+        </ol>
+        <div class="principle">
+          <p class="tag">The core principle</p>
+          <p class="claim">Time proximity alone does not prove correlation.</p>
+          <p>Two signals that arrive close together belong in the same incident only if there is structural evidence — a shared service path, a topology dependency, similar log templates, or a combination — supporting that grouping.</p>
+        </div>
+      </section>
+
+      <section id="sources">
+        <h2><span class="num">03</span>Signal Sources</h2>
+        <p>The simulator emits raw signals from three sources, each in its own native format and on its own stream (see <a href="#simulator">Section 5</a>). Your ingestion layer must handle all three.</p>
+
+        <h3>3.1 CloudWatch Metrics</h3>
+        <p>Alarm state-change payloads in AWS CloudWatch Alarm format, one alarm per event. Fields include alarm name and description, state change time, region, new and previous state, the trigger (metric, namespace, dimensions, statistic, period, evaluation periods, threshold and observed value) and the affected resources. The alarm description and the affected-resources block contain internal account identifiers and service-account emails that must be redacted.</p>
+        <div class="code">
+          <div class="code-head"><span>aiops-cloudwatch · example payload</span></div>
+<pre>{
+  <span class="k">"AlarmName"</span>: "HighDBConnections-payments-service",
+  <span class="k">"AlarmDescription"</span>: "DB connection pool utilisation exceeded 90% threshold — affects svc-payments@internal.corp.com",
+  <span class="k">"StateChangeTime"</span>: "2026-09-26T10:01:00Z",
+  <span class="k">"Region"</span>: "ap-south-1",
+  <span class="k">"NewStateValue"</span>: "ALARM",
+  <span class="k">"OldStateValue"</span>: "OK",
+  <span class="k">"Trigger"</span>: {
+    <span class="k">"MetricName"</span>: "DBConnectionCount",
+    <span class="k">"Namespace"</span>: "AWS/RDS",
+    <span class="k">"Dimensions"</span>: [{"name": "DBInstanceIdentifier", "value": "prod-payments-db"}],
+    <span class="k">"Statistic"</span>: "AVERAGE",
+    <span class="k">"Period"</span>: 60,
+    <span class="k">"EvaluationPeriods"</span>: 3,
+    <span class="k">"Threshold"</span>: 90,
+    <span class="k">"ObservedValue"</span>: 91.3
+  },
+  <span class="k">"AffectedResources"</span>: {
+    <span class="k">"service"</span>: "agency-db",
+    <span class="k">"component"</span>: "db-connection-pool",
+    <span class="k">"environment"</span>: "prod",
+    <span class="k">"region"</span>: "ap-south-1",
+    <span class="k">"accountId"</span>: "456789012345",
+    <span class="k">"serviceAccount"</span>: "svc-payments@internal.corp.com"
+  }
+}</pre>
+        </div>
+
+        <h3>3.2 Application Logs</h3>
+        <p>Raw log lines as plain text, one line per event: ISO-8601 timestamp, level (<code>ERROR</code>, <code>WARN</code>, <code>INFO</code>), service, component, a context block in square brackets, and a free-text message. The context block holds key:value pairs — <code>user:</code> (customer email), <code>ip:</code>, <code>session:</code>, <code>acc:</code> (account number) and <code>host:</code> (internal hostname — sensitive, but not PII). Messages may repeat PII from the context and occasionally include customer names or phone numbers. All PII must be redacted before the signal is processed further.</p>
+        <div class="code">
+          <div class="code-head"><span>aiops-logs · example lines</span></div>
+<pre>2026-09-26T10:01:05Z ERROR payments-service db-connection-pool [user:neha.joshi@acmecorp.com ip:10.0.2.83 session:sess_kd3dxt acc:ACC-10000055] Connection pool exhausted. Pool size: 100, waiting threads: 22
+2026-09-26T10:01:06Z ERROR payments-service db-connection-pool [user:rahul.verma@acmecorp.com ip:10.0.3.71 session:sess_dv9q26 acc:ACC-10000108] No free connection in pool. Pool size: 100, waiting threads: 36
+2026-09-26T10:01:27Z ERROR payments-service db-connection-pool [user:rohan.desai@acmecorp.com ip:10.0.1.29 session:sess_ly2vgi acc:ACC-10000015] No free connection in pool. Pool size: 100, waiting threads: 63
+2026-09-26T10:01:48Z WARN enrollment-service api-handler [host:enrollment-prod-02] Circuit breaker OPEN for payments-service after 27 consecutive failures</pre>
+        </div>
+
+        <h3>3.3 Grafana Alerts</h3>
+        <p>Alert payloads in Grafana alerting webhook format, one alert per event. Fields include title, state (<code>alerting</code> or <code>pending</code>), rule name, org, dashboard and panel ids, metric matches (<code>evalMatches</code>, whose tags include service, environment, region and host, and sometimes an upstream or job tag), a free-text message, rule tags and a rule URL. The message may contain customer emails, account numbers and session tokens, and <code>tags.host</code> may be an IP address — all must be redacted.</p>
+        <div class="code">
+          <div class="code-head"><span>aiops-grafana · example payload</span></div>
+<pre>{
+  <span class="k">"title"</span>: "High Latency — enrollment-service",
+  <span class="k">"state"</span>: "alerting",
+  <span class="k">"ruleName"</span>: "HighLatency-enrollment",
+  <span class="k">"orgId"</span>: 1,
+  <span class="k">"dashboardId"</span>: 12,
+  <span class="k">"panelId"</span>: 7,
+  <span class="k">"evalMatches"</span>: [
+    {"metric": "response_time_p99", "value": 4785,
+     "tags": {"service": "enrollment-service", "environment": "prod", "region": "ap-south-1", "host": "10.0.4.56"}}
+  ],
+  <span class="k">"message"</span>: "P99 4785ms above the 4000ms threshold for 3 consecutive periods. Last affected user: priya.sharma@acmecorp.com (acc: ACC-10000181, session: sess_58917o)",
+  <span class="k">"tags"</span>: {"environment": "prod", "region": "ap-south-1"},
+  <span class="k">"imageUrl"</span>: null,
+  <span class="k">"ruleUrl"</span>: "http://grafana.internal/d/dash-12/enrollment-service"
+}</pre>
+        </div>
+      </section>
+
+      <section id="schema">
+        <h2><span class="num">04</span>Canonical Signal Schema</h2>
+        <p>After parsing and PII redaction, every signal — regardless of source — must be normalised into this schema before it enters the detection and correlation stages.</p>
+        <div class="code">
+          <div class="code-head"><span>canonical signal</span></div>
+<pre>{
+  <span class="k">"signal_id"</span>:      "uuid-v4 (generated by your system)",
+  <span class="k">"timestamp"</span>:      "2026-09-26T10:01:03Z",
+  <span class="k">"source"</span>:         "cloudwatch_metrics | application_logs | grafana_alerts",
+  <span class="k">"environment"</span>:    "prod | staging | dev",
+  <span class="k">"region"</span>:         "ap-south-1 | us-east-1",
+  <span class="k">"service"</span>:        "payments-service | enrollment-service | carrier-service | ...",
+  <span class="k">"component"</span>:      "db-connection-pool | api-handler | queue-processor | ...",
+  <span class="k">"signal_type"</span>:    "metric_anomaly | error_log_burst | grafana_alert",
+  <span class="k">"anomaly_score"</span>:  0.0,
+  <span class="k">"evidence"</span>:       "[REDACTED] connection pool exhausted — template#118",
+  <span class="k">"metadata"</span>:       {}
+}</pre>
+        </div>
+        <ul class="plain">
+          <li><code>anomaly_score</code> must be computed by your detection logic — it is not provided pre-computed.</li>
+          <li><code>evidence</code> must contain no PII; redacted tokens must be clearly marked (for example <code>[REDACTED]</code>).</li>
+          <li><code>metadata</code> is a free object for any source-specific fields your downstream stages find useful.</li>
+        </ul>
+      </section>
+
+      <section id="simulator">
+        <h2><span class="num">05</span>The Signal Simulator</h2>
+        <p>The simulator is hosted by Ensylon and runs for the whole event. It streams raw signals over HTTPS using Server-Sent Events (SSE), one stream per source. Connect with any SSE-capable client — or a plain HTTP GET that keeps the connection open — and process signals as they arrive.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Stream</th><th>Payload</th><th><span class="sr-only">Copy</span></th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-logs</td>
+                <td>Application logs · plain text</td>
+                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-logs">Copy</button></td>
+              </tr>
+              <tr>
+                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-grafana</td>
+                <td>Grafana alerts · JSON</td>
+                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-grafana">Copy</button></td>
+              </tr>
+              <tr>
+                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-cloudwatch</td>
+                <td>CloudWatch alarms · JSON</td>
+                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-cloudwatch">Copy</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <ul class="plain">
+          <li>The simulator injects realistic, synthetic PII into the fields described in <a href="#sources">Section 3</a>. None of it is real customer data, but your pipeline must treat it as if it were.</li>
+          <li>Every event has a sequence id. If your connection drops, reconnect with the <code>Last-Event-ID</code> header (standard SSE clients do this automatically) and the stream resumes from the next signal, so none are lost.</li>
+          <li>The stream sends a keep-alive comment (<code>:keepalive</code>) every 15 seconds. Signals arrive in bursts, and there will be stretches with no signals at all — your system must handle silence gracefully, without crashing or raising incidents from it.</li>
+        </ul>
+        <div class="code">
+          <div class="code-head"><span>connecting · SSE wire format</span></div>
+<pre>curl -N https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-logs
+
+<span class="c"># SSE wire format (same on all three streams):</span>
+id: 000042
+event: signal
+data: &lt;payload — plain text on aiops-logs, a JSON string on aiops-grafana and aiops-cloudwatch&gt;</pre>
+        </div>
+        <p>Your system must handle signals as they arrive — you may not use the simulator’s internals, its configuration or any other endpoint on its host. Treat the three streams as your only input.</p>
+      </section>
+
+      <section id="reference">
+        <h2><span class="num">06</span>Reference Data</h2>
+        <p>The following reference files will be provided to each team.</p>
+
+        <h3>6.1 Service Dependency Graph</h3>
+        <p><code>service_dependency_graph.json</code> — a directed adjacency list of which Nexus Agency service calls which. Use it to compute topology-based correlation (the hop distance between the services of co-occurring signals). It is also served, with no authentication, at:</p>
+        <div class="code">
+          <div class="code-head">
+            <span>GET · no authentication</span>
+            <button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/reference/service-dependency-graph">Copy URL</button>
+          </div>
+<pre>https://logs.nonprod.nexus.ensylon.com/sim/reference/service-dependency-graph</pre>
+        </div>
+        <div class="code">
+          <div class="code-head"><span>service_dependency_graph.json</span></div>
+<pre>{
+  <span class="k">"agency-gateway"</span>:       ["carrier-service", "party-service"],
+  <span class="k">"enrollment-service"</span>:   ["payments-service", "carrier-service", "party-service", "product-service"],
+  <span class="k">"carrier-service"</span>:      ["payments-service", "agency-db", "comms-service"],
+  <span class="k">"payments-service"</span>:     ["agency-db", "rulesforge"],
+  <span class="k">"rulesforge"</span>:           ["agency-db"],
+  <span class="k">"compensation-service"</span>: ["payments-service", "distribution-service", "agency-db"],
+  <span class="k">"distribution-service"</span>: ["party-service", "agency-db"],
+  <span class="k">"party-service"</span>:        ["agency-db"],
+  <span class="k">"product-service"</span>:      ["agency-db"],
+  <span class="k">"comms-service"</span>:        [],
+  <span class="k">"docforge"</span>:             ["agency-db"],
+  <span class="k">"agency-db"</span>:            []
+}</pre>
+        </div>
+
+        <h3>6.2 Business Criticality Map</h3>
+        <p><code>criticality_map.json</code> — maps service names to a business criticality score (0–100). Use it as an input to your impact severity scoring.</p>
+        <div class="code">
+          <div class="code-head"><span>criticality_map.json</span></div>
+<pre>{
+  <span class="k">"payments-service"</span>:     95,
+  <span class="k">"enrollment-service"</span>:   92,
+  <span class="k">"carrier-service"</span>:      88,
+  <span class="k">"agency-gateway"</span>:       85,
+  <span class="k">"agency-db"</span>:            80,
+  <span class="k">"compensation-service"</span>: 78,
+  <span class="k">"rulesforge"</span>:           75,
+  <span class="k">"party-service"</span>:        72,
+  <span class="k">"distribution-service"</span>: 65,
+  <span class="k">"product-service"</span>:      60,
+  <span class="k">"comms-service"</span>:        40,
+  <span class="k">"docforge"</span>:             30
+}</pre>
+        </div>
+        <p>Services not present in the map must receive a neutral default score of 50. Never treat unknown services as critical or trivial by default.</p>
+      </section>
+
+      <section id="build">
+        <h2><span class="num">07</span>What You Must Build</h2>
+        <p>Your system must implement the following five components end to end.</p>
+        <div class="components">
+          <article class="component">
+            <h3><span class="n">C1</span>Ingestion, PII Redaction &amp; Normalisation</h3>
+            <p>Parse raw signals from each of the three source formats. Detect and redact PII — including but not limited to email addresses, IP addresses, session tokens, account numbers, personal names and internal service-account identifiers. Normalise each parsed and redacted signal into the canonical schema in <a href="#schema">Section 4</a>.</p>
+          </article>
+          <article class="component">
+            <h3><span class="n">C2</span>Anomaly Detection</h3>
+            <p>Compute an <code>anomaly_score</code> (0.0–1.0) for each normalised signal and flag signals above your chosen threshold as anomalous candidates for correlation. You may use statistical methods (z-score, EWMA), rule-based thresholds, log template frequency analysis (for example Drain3), or any combination. Document your approach.</p>
+          </article>
+          <article class="component">
+            <h3><span class="n">C3</span>Correlation Engine</h3>
+            <p>Group anomalous signals into candidate incident clusters. Your correlation formula must use at least three of these dimensions:</p>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>Dimension</th><th>Description</th></tr></thead>
+                <tbody>
+                  <tr><td class="dim">Temporal (T)</td><td>Time proximity of signals within a correlation window</td></tr>
+                  <tr><td class="dim">Service (S)</td><td>Shared or related service path</td></tr>
+                  <tr><td class="dim">Topology (D)</td><td>Hop distance in the service dependency graph</td></tr>
+                  <tr><td class="dim">Evidence Similarity (E)</td><td>Similarity of log templates or alert rule names</td></tr>
+                  <tr><td class="dim">Component (C)</td><td>Same infrastructure component</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p>Define your correlation formula, dimension weights, correlation window and merge threshold explicitly. Signals that exceed the merge threshold are grouped together; signals that do not remain separate.</p>
+          </article>
+          <article class="component">
+            <h3><span class="n">C4</span>Incident Validation &amp; Scoring</h3>
+            <p>Before accepting a candidate cluster as a real incident, validate it. Apply at least two validation checks of your own design — for example an internal coherence check, an environment consistency check, or a bridge-signal check that prevents weak chains.</p>
+            <p>For each accepted incident, compute two scores separately — do not blend them:</p>
+            <ul class="plain">
+              <li><strong>Impact Severity (0–100)</strong> — based on blast radius, business criticality of affected services and anomaly magnitude</li>
+              <li><strong>Correlation Confidence (0–1)</strong> — based on cluster density, topology support and evidence agreement</li>
+            </ul>
+          </article>
+          <article class="component">
+            <h3><span class="n">C5</span>Ticket Drafting &amp; Human Review</h3>
+            <p>Use the Claude API credentials provided to draft a structured incident ticket for each accepted incident. The draft must include a title, impact severity, correlation confidence, affected services, a signal timeline with source labels, observed evidence (facts only, clearly distinguished from suspected root causes) and suggested investigation steps.</p>
+            <p>The draft must be presented to a human reviewer who can approve, edit-and-approve, or reject it. A ticket is written to <code>output/tickets/</code> only after explicit human approval.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="submission">
+        <h2><span class="num">08</span>Submission Requirements</h2>
+        <p><strong>Source code</strong> must be committed to your team’s Git repository (provided at event start). Include a <code>README.md</code> with setup and run instructions.</p>
+        <p><strong>Presentation</strong> is a slide deck delivered on Day 2, following the flow in the hackathon agenda shared separately. The deck must explain your design decisions — correlation formula, dimension weights, validation approach and scoring model — alongside a live or recorded demonstration of the system.</p>
+      </section>
+
+      <footer>
+        <span>Ensylon Technologies · AIOps Challenge 2026</span>
+        <span>Confidential</span>
+      </footer>
+    </main>
+  </div>
+</div>
+
+<style>.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}</style>
+<script>
+  document.querySelectorAll('button.copy').forEach((button) => {
+    const label = button.textContent;
+    button.addEventListener('click', async () => {
+      const text = button.dataset.copy;
+      try {
+        await navigator.clipboard.writeText(text);
+        button.textContent = 'Copied';
+      } catch (e) {
+        // Clipboard refused: select the URL text so it can be copied by hand.
+        const row = button.closest('tr, .code');
+        const target = row && row.querySelector('td.url, pre');
+        if (target) {
+          const range = document.createRange();
+          range.selectNodeContents(target);
+          const selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+        button.textContent = 'Selected — press Ctrl/⌘ C';
+      }
+      setTimeout(() => { button.textContent = label; }, 2000);
+    });
+  });
+</script>
+
+</body>
+</html>
