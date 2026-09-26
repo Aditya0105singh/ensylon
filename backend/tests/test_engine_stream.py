@@ -122,13 +122,18 @@ def test_signals_route_can_return_anomalies_only(monkeypatch):
 
     from app import engine_api
 
-    rows = [{"signal_id": "a", "anomaly_score": 0.1}, {"signal_id": "b", "anomaly_score": 0.9},
-            {"signal_id": "c", "anomaly_score": 0.6}]
+    rows = [{"signal_id": "a", "anomaly_score": 0.1, "metadata": {"is_anomaly": False}},
+            {"signal_id": "b", "anomaly_score": 0.9, "metadata": {"is_anomaly": True}},
+            {"signal_id": "c", "anomaly_score": 0.6, "metadata": {"is_anomaly": True}},
+            {"signal_id": "d", "anomaly_score": 0.55, "metadata": {"is_anomaly": True}}]
     monkeypatch.setattr(engine_api, "_live", SimpleNamespace(engine=SimpleNamespace(canonical=rows)))
     out = engine_api.stream_signals(limit=10, min_score=0.6)
     assert out["total"] == 2
     assert [r["signal_id"] for r in out["signals"]] == ["c", "b"]      # newest first
-    assert engine_api.stream_signals(limit=10)["total"] == 3
+    assert engine_api.stream_signals(limit=10)["total"] == 4
+    # A first-seen warning (0.55) is flagged but below the anchoring minimum.
+    flagged = engine_api.stream_signals(limit=10, anomalous=True)
+    assert [r["signal_id"] for r in flagged["signals"]] == ["d", "c", "b"]
 
 
 def test_late_signal_joins_the_open_incident():

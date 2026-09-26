@@ -853,11 +853,13 @@ def stream_status() -> dict:
 
 @router.get("/stream/signals")
 def stream_signals(
-    limit: int = 200, source: str | None = None, service: str | None = None, min_score: float | None = None
+    limit: int = 200, source: str | None = None, service: str | None = None,
+    min_score: float | None = None, anomalous: bool | None = None,
 ) -> dict:
     """Most recent normalised signals, in the challenge's canonical schema.
     Every record is already redacted; nothing raw is kept. `min_score` keeps
-    only signals whose anomaly_score is at least that value."""
+    only signals whose anomaly_score is at least that value; `anomalous=true`
+    keeps only the ones the detector flagged."""
     runtime = _require_live()
     limit = max(1, min(limit, 2000))
     with _LOCK:
@@ -868,6 +870,8 @@ def stream_signals(
         rows = [r for r in rows if r.get("service") == service]
     if min_score is not None:
         rows = [r for r in rows if float(r.get("anomaly_score") or 0.0) >= min_score]
+    if anomalous is not None:
+        rows = [r for r in rows if bool((r.get("metadata") or {}).get("is_anomaly")) == anomalous]
     return {"total": len(rows), "signals": list(reversed(rows[-limit:]))}
 
 
