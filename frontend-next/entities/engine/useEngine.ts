@@ -1,3 +1,4 @@
+import type { Reviewer } from "./reviewer";
 import { useCallback } from "react";
 import useSWR, { useSWRConfig, SWRConfiguration } from "swr";
 import { useApi } from "@/shared/lib/hooks/useApi";
@@ -29,6 +30,10 @@ export const TOPOLOGIES_KEY = "/engine/topologies";
 
 /** Live data refreshes on this cadence; the backend ticks every 2 s. */
 export const LIVE_REFRESH_MS = 3000;
+
+/** The sign-off fields every decision sends: the backend records both in the
+ * incident archive, and a live run refuses a decision without the email. */
+const signer = (who: Reviewer) => ({ actor: who.name.trim(), actor_email: who.email.trim() || undefined });
 
 /** GET /engine/report — the last scenario run's pipeline stats + measured
  * evaluation against its own injected ground truth (see pipeline.evaluate). */
@@ -230,9 +235,9 @@ export const useEngineActions = () => {
   );
 
   const approve = useCallback(
-    async (draftId: string, actor: string, edits?: Record<string, unknown>) => {
+    async (draftId: string, who: Reviewer, edits?: Record<string, unknown>) => {
       const result = await api.post<DraftDetail>(`${QUEUE_KEY}/${draftId}/approve`, {
-        actor,
+        ...signer(who),
         edits,
       });
       await refreshAll();
@@ -242,9 +247,9 @@ export const useEngineActions = () => {
   );
 
   const reject = useCallback(
-    async (draftId: string, actor: string, note = "") => {
+    async (draftId: string, who: Reviewer, note = "") => {
       const result = await api.post<DraftDetail>(`${QUEUE_KEY}/${draftId}/reject`, {
-        actor,
+        ...signer(who),
         note,
       });
       await refreshAll();
@@ -254,9 +259,9 @@ export const useEngineActions = () => {
   );
 
   const merge = useCallback(
-    async (draftId: string, into: string, actor: string, note = "") => {
+    async (draftId: string, into: string, who: Reviewer, note = "") => {
       const result = await api.post<DraftDetail>(`${QUEUE_KEY}/${draftId}/merge`, {
-        actor,
+        ...signer(who),
         into,
         note,
       });
@@ -285,8 +290,8 @@ export const useEngineActions = () => {
   );
 
   const resolve = useCallback(
-    async (draftId: string, actor: string) => {
-      const result = await api.post<DraftDetail>(`${QUEUE_KEY}/${draftId}/resolve`, { actor });
+    async (draftId: string, who: Reviewer) => {
+      const result = await api.post<DraftDetail>(`${QUEUE_KEY}/${draftId}/resolve`, signer(who));
       await refreshAll();
       return result;
     },

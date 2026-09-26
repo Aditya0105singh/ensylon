@@ -22,6 +22,7 @@ import {
   useEngineEvidence,
   useEngineFeedback,
 } from "@/entities/engine/useEngine";
+import { SignOffFields, useReviewer } from "@/entities/engine/reviewer";
 import type { Evidence, EvidenceSignal } from "@/entities/engine/types";
 
 const SOURCE_LABEL: Record<string, string> = {
@@ -464,16 +465,18 @@ function FeedbackCard() {
 function LiveUpdates({ draftId }: { draftId: string }) {
   const { data: d } = useEngineDraft(draftId, { refreshInterval: 5000 });
   const { resolve } = useEngineActions();
-  const { data: session } = useSession();
+  const { reviewer, problem } = useReviewer();
   if (!d) return null;
-  const actor = session?.user?.name ?? "on-call";
   return (
     <div className="mt-3 rounded-xl border border-gray-200 bg-white/80 p-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="text-[11px] font-bold uppercase tracking-wide text-gray-700">Stateful incident</div>
         {d.status === "published" && d.lifecycle !== "resolved" && (
           <button
-            onClick={async () => { try { await resolve(draftId, actor); toast.success("Marked resolved"); } catch (e: any) { toast.error(e?.message || "Failed"); } }}
+            onClick={async () => {
+              if (problem) { toast.error(`${problem} (in the ticket card below) to mark it resolved`); return; }
+              try { await resolve(draftId, reviewer); toast.success("Marked resolved"); } catch (e: any) { toast.error(e?.message || "Failed"); }
+            }}
             className="rounded-lg bg-gray-800 hover:bg-gray-900 text-white text-xs font-semibold px-3 py-1.5">
             Mark resolved
           </button>
@@ -509,9 +512,8 @@ function TicketCard({ draftId, ev }: { draftId: string; ev: Evidence }) {
   const { data: draft } = useEngineDraft(draftId, { refreshInterval: 5000 });
   const { data: audit } = useEngineAudit();
   const { approve, reject } = useEngineActions();
-  const { data: session } = useSession();
   const [busy, setBusy] = useState(false);
-  const [reviewer, setReviewer] = useState(session?.user?.name ?? "");
+  const { reviewer, setReviewer, problem } = useReviewer();
   const [note, setNote] = useState("");
   const [edit, setEdit] = useState<EditState | null>(null);
 
@@ -521,11 +523,9 @@ function TicketCard({ draftId, ev }: { draftId: string; ev: Evidence }) {
   const rejected = draft.status === "rejected";
   const merged = draft.status === "merged";
   const pending = draft.status === "awaiting_review";
-  const actor = reviewer.trim() || session?.user?.name || "";
-
   const act = async (fn: () => Promise<unknown>, ok: string) => {
-    if (!actor) {
-      toast.error("Enter a reviewer name - approval requires a named human");
+    if (problem) {
+      toast.error(`${problem} - every decision is signed with your name and email`);
       return;
     }
     setBusy(true);
@@ -697,18 +697,12 @@ function TicketCard({ draftId, ev }: { draftId: string; ev: Evidence }) {
 
         {pending && (
           <div className="flex flex-wrap items-center gap-2 mt-3">
-            <input
-              value={reviewer}
-              onChange={(e) => setReviewer(e.target.value)}
-              placeholder="Reviewer name"
-              aria-label="Reviewer name"
-              className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-sm w-44 focus:outline-none focus:border-green-500"
-            />
+            <SignOffFields reviewer={reviewer} onChange={setReviewer} className="w-full" />
             {!edit ? (
               <>
                 <button
                   disabled={busy}
-                  onClick={() => act(() => approve(draftId, actor), "Approved - ticket written")}
+                  onClick={() => act(() => approve(draftId, reviewer), "Approved - ticket written")}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-green-700 hover:bg-green-800 disabled:opacity-60 text-white text-sm font-semibold px-4 py-2"
                 >
                   <HiOutlinePaperAirplane size={15} /> Approve
@@ -727,7 +721,7 @@ function TicketCard({ draftId, ev }: { draftId: string; ev: Evidence }) {
                   disabled={busy}
                   onClick={() => {
                     const edits = changedFields(edit);
-                    act(() => approve(draftId, actor, Object.keys(edits).length ? edits : undefined),
+                    act(() => approve(draftId, reviewer, Object.keys(edits).length ? edits : undefined),
                       Object.keys(edits).length ? "Edited and approved - ticket written" : "Approved - ticket written");
                   }}
                   className="inline-flex items-center gap-1.5 rounded-lg bg-green-700 hover:bg-green-800 disabled:opacity-60 text-white text-sm font-semibold px-4 py-2"
@@ -746,7 +740,7 @@ function TicketCard({ draftId, ev }: { draftId: string; ev: Evidence }) {
             />
             <button
               disabled={busy}
-              onClick={() => act(() => reject(draftId, actor, note.trim() || "rejected by reviewer"), "Rejected - nothing written")}
+              onClick={() => act(() => reject(draftId, reviewer, note.trim() || "rejected by reviewer"), "Rejected - nothing written")}
               className="inline-flex items-center gap-1.5 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-800 text-sm font-semibold px-4 py-2"
             >
               <HiOutlineXCircle size={15} /> Reject

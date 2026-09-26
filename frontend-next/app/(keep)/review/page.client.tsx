@@ -30,6 +30,7 @@ import {
   useEngineDraft,
   useEngineActions,
 } from "@/entities/engine/useEngine";
+import { SignOffFields, signOffProblem, useReviewer, type Reviewer } from "@/entities/engine/reviewer";
 import { PipelineStages } from "@/entities/engine/PipelineStages";
 import type { DraftStatus, Priority, QueueSummary } from "@/entities/engine/types";
 
@@ -438,15 +439,16 @@ function DraftDetailPanel({ draftId }: { draftId: string }) {
   );
 }
 
-function QueueRow({ item, actor, delay = 0 }: { item: QueueSummary; actor: string; delay?: number }) {
+function QueueRow({ item, reviewer, delay = 0 }: { item: QueueSummary; reviewer: Reviewer; delay?: number }) {
   const [expanded, setExpanded] = useState(false);
   const [mergeTarget, setMergeTarget] = useState<string | null>(null);
   const [mergeId, setMergeId] = useState("");
   const { approve, reject, merge } = useEngineActions();
 
   const requireActor = () => {
-    if (!actor.trim()) {
-      toast.error("Enter a reviewer name first — approval requires a named human actor");
+    const problem = signOffProblem(reviewer);
+    if (problem) {
+      toast.error(`${problem} - every decision is signed with your name and email`);
       return false;
     }
     return true;
@@ -455,7 +457,7 @@ function QueueRow({ item, actor, delay = 0 }: { item: QueueSummary; actor: strin
   const doApprove = async () => {
     if (!requireActor()) return;
     try {
-      const result = await approve(item.draft_id, actor);
+      const result = await approve(item.draft_id, reviewer);
       toast.success(`Approved - ticket ${result.jira_key} written`);
     } catch (e: any) {
       toast.error(e?.message || "Approve failed");
@@ -465,7 +467,7 @@ function QueueRow({ item, actor, delay = 0 }: { item: QueueSummary; actor: strin
   const doReject = async () => {
     if (!requireActor()) return;
     try {
-      await reject(item.draft_id, actor, "rejected from review queue");
+      await reject(item.draft_id, reviewer, "rejected from review queue");
       toast.info("Rejected — correction fed back to correlation");
     } catch (e: any) {
       toast.error(e?.message || "Reject failed");
@@ -479,7 +481,7 @@ function QueueRow({ item, actor, delay = 0 }: { item: QueueSummary; actor: strin
       return;
     }
     try {
-      await merge(item.draft_id, mergeId.trim(), actor, "merged from review queue");
+      await merge(item.draft_id, mergeId.trim(), reviewer, "merged from review queue");
       toast.info(`Merged into ${mergeId.trim()}`);
       setMergeTarget(null);
     } catch (e: any) {
@@ -611,7 +613,7 @@ export default function ReviewPage() {
   const { data: queue, isLoading } = useEngineQueue();
   const { data: audit } = useEngineAudit();
   const [tab, setTab] = useState<DraftStatus>("awaiting_review");
-  const [actor, setActor] = useState("");
+  const { reviewer, setReviewer } = useReviewer();
 
   // The bell (Topbar) links here with #review-queue. Next.js's own hash
   // scroll only fires for elements present at the very first paint; this is
@@ -639,15 +641,10 @@ export default function ReviewPage() {
         <div className="flex flex-wrap items-center gap-2">
           <HiOutlineShieldCheck className="text-amber-600 shrink-0" size={17} />
           <Text className="text-sm text-amber-800">
-            Reviewer name (required to Approve, Reject, or Merge — every
-            decision is written to the audit log below with this name):
+            Sign off as (required to Approve, Reject or Merge - every decision is
+            kept in the incident history with your name and email):
           </Text>
-          <TextInput
-            placeholder="you@teamspacex"
-            value={actor}
-            onValueChange={setActor}
-            className="max-w-xs"
-          />
+          <SignOffFields reviewer={reviewer} onChange={setReviewer} />
         </div>
       </div>
 
@@ -688,7 +685,7 @@ export default function ReviewPage() {
         ) : (
           <div className="flex flex-col gap-2">
             {filtered.map((item, i) => (
-              <QueueRow key={item.draft_id} item={item} actor={actor} delay={i * 50} />
+              <QueueRow key={item.draft_id} item={item} reviewer={reviewer} delay={i * 50} />
             ))}
           </div>
         )}

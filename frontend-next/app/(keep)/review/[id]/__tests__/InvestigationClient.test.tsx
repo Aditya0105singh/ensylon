@@ -52,13 +52,21 @@ function baseRoutes(overrides: { draft?: Partial<Parameters<typeof draftDetail>[
   };
 }
 
-function renderPage(routes: Record<string, unknown>, opts: { sessionName?: string | null; post?: jest.Mock } = {}) {
+function renderPage(
+  routes: Record<string, unknown>,
+  opts: { sessionName?: string | null; sessionEmail?: string | null; post?: jest.Mock } = {}
+) {
   (useSession as jest.Mock).mockReturnValue({
-    data: opts.sessionName === null ? null : { user: { name: opts.sessionName ?? "Test User" } },
+    data: opts.sessionName === null ? null : {
+      user: { name: opts.sessionName ?? "Test User", email: opts.sessionEmail === null ? undefined : opts.sessionEmail ?? "test.user@ensylon.com" },
+    },
   });
   mockApi(routes, opts.post);
   return render(withFreshSWR(<InvestigationClient draftId={DRAFT_ID} />));
 }
+
+// The reviewer is remembered in localStorage between pages; each test starts clean.
+beforeEach(() => localStorage.clear());
 
 describe("InvestigationClient — empty and loading states", () => {
   it("shows a way back to Overview when there is no incident to investigate", async () => {
@@ -176,21 +184,35 @@ describe("InvestigationClient — the review gate", () => {
     fireEvent.click(screen.getByRole("button", { name: /^approve$/i }));
 
     await waitFor(() =>
-      expect(toast.error).toHaveBeenCalledWith("Enter a reviewer name - approval requires a named human")
+      expect(toast.error).toHaveBeenCalledWith("Enter your name to sign off - every decision is signed with your name and email")
     );
     expect(post).not.toHaveBeenCalled();
   });
 
-  it("approving with a reviewer name posts to the approve endpoint with that actor", async () => {
+  it("refuses to approve without the reviewer's email", async () => {
+    const post = jest.fn();
+    renderPage(baseRoutes(), { sessionEmail: null, post });
+    await screen.findByText("AWAITING HUMAN REVIEW");
+
+    fireEvent.click(screen.getByRole("button", { name: /^approve$/i }));
+
+    await waitFor(() =>
+      expect(toast.error).toHaveBeenCalledWith("Enter your email to sign off - every decision is signed with your name and email")
+    );
+    expect(post).not.toHaveBeenCalled();
+  });
+
+  it("approving posts the reviewer's name and email with the decision", async () => {
     const post = jest.fn().mockResolvedValue(draftDetail({ status: "published", jira_key: "TKT-0001" }));
     renderPage(baseRoutes(), { post });
     await screen.findByText("AWAITING HUMAN REVIEW");
 
     fireEvent.change(screen.getByLabelText("Reviewer name"), { target: { value: "Aditya Singh" } });
+    fireEvent.change(screen.getByLabelText("Reviewer email"), { target: { value: "aditya@ensylon.com" } });
     fireEvent.click(screen.getByRole("button", { name: /^approve$/i }));
 
     await waitFor(() =>
-      expect(post).toHaveBeenCalledWith(`/engine/queue/${DRAFT_ID}/approve`, { actor: "Aditya Singh" })
+      expect(post).toHaveBeenCalledWith(`/engine/queue/${DRAFT_ID}/approve`, { actor: "Aditya Singh", actor_email: "aditya@ensylon.com" })
     );
   });
 
@@ -206,6 +228,7 @@ describe("InvestigationClient — the review gate", () => {
     await waitFor(() =>
       expect(post).toHaveBeenCalledWith(`/engine/queue/${DRAFT_ID}/approve`, {
         actor: "Test User",
+        actor_email: "test.user@ensylon.com",
         edits: { title: "DB pool exhausted" },
       })
     );
@@ -229,7 +252,9 @@ describe("InvestigationClient — the review gate", () => {
     fireEvent.click(screen.getByRole("button", { name: /^reject$/i }));
 
     await waitFor(() =>
-      expect(post).toHaveBeenCalledWith(`/engine/queue/${DRAFT_ID}/reject`, { actor: "Test User", note: "known deploy" })
+      expect(post).toHaveBeenCalledWith(`/engine/queue/${DRAFT_ID}/reject`, {
+        actor: "Test User", actor_email: "test.user@ensylon.com", note: "known deploy",
+      })
     );
   });
 });
