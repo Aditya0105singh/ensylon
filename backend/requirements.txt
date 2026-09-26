@@ -7,6 +7,7 @@ scipy>=1.11
 networkx>=2.8
 drain3>=0.9.11   # log template mining (engine falls back to a regex template if absent)
 sqlalchemy>=2.0
+python-dotenv>=1.0   # loads ../.env (ANTHROPIC_API_KEY etc.) so the key doesn't need exporting by hand
 # Optional: pip install presidio-analyzer spacy && python -m spacy download en_core_web_sm  (NER redaction; regex redaction always runs)
 
 # Test-only

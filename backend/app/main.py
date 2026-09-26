@@ -25,6 +25,10 @@ from pathlib import Path
 
 os.environ.setdefault("USE_TF", "0")
 
+from dotenv import load_dotenv
+
+load_dotenv(Path(__file__).resolve().parents[2] / ".env")
+
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import threading
