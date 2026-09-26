@@ -148,7 +148,7 @@ The live run keeps a recording of what the streams sent, as JSON lines in `recor
 ### C3 — Correlation (`correlate.py`, `causal.py`)
 1. **Structural gate.** A pair is only scored if one of these holds:
    - same service;
-   - a dependency edge within 2 hops on the reference graph;
+   - a direct dependency edge on the reference graph (one hop; two hops count only with a shared component, below);
    - one signal names the other's service in its evidence (for example "Circuit breaker OPEN for payments-service");
    - same component, at most 2 hops apart.
 2. **Similarity:** `sim = 0.25·T + 0.20·S + 0.20·D + 0.20·E + 0.15·C`, where:
