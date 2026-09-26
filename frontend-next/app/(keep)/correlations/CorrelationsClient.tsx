@@ -1,9 +1,17 @@
 "use client";
 
+import { useState } from "react";
+import clsx from "clsx";
 import { TbChartDots3 } from "react-icons/tb";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { PageHero } from "@/shared/ui";
-import { useValidationRejections } from "@/entities/engine/useEngine";
+import {
+  useEngineAblation,
+  useEngineEvidence,
+  useEngineQueue,
+  useEngineReliability,
+  useValidationRejections,
+} from "@/entities/engine/useEngine";
 import { clockUTC } from "../_overview/lib";
 
 // Mirrors backend/app/engine/correlate.py, validate.py and severity.py. If a
@@ -39,6 +47,190 @@ function Panel({ title, children }: { title: string; children: React.ReactNode }
   );
 }
 
+function Bar({ value, tone = "blue" }: { value: number; tone?: "blue" | "signed" }) {
+  const color =
+    tone === "signed"
+      ? value >= 0
+        ? "bg-green-500"
+        : "bg-red-500"
+      : value >= 0.6
+      ? "bg-blue-500"
+      : "bg-amber-500";
+  return (
+    <div className="h-1.5 w-full rounded-full bg-gray-100 overflow-hidden mt-1">
+      <div className={clsx("h-full rounded-full", color)} style={{ width: `${Math.max(2, Math.min(100, Math.abs(value) * 100))}%` }} />
+    </div>
+  );
+}
+
+/** Real data from a live incident, next to the generic formula/checklist
+ * above — so the spec on this page is grounded in what the engine is
+ * actually doing right now, not just what it is documented to do. */
+function LiveIncidentPanel() {
+  const { data: queue } = useEngineQueue();
+  const [selected, setSelected] = useState<string | null>(null);
+  const items = queue ?? [];
+  const draftId = selected ?? items[0]?.draft_id ?? null;
+
+  const { data: evidence } = useEngineEvidence(draftId);
+  const confidence = evidence?.correlation.confidence;
+
+  return (
+    <Panel title="Live: see it on a real incident">
+      {items.length === 0 ? (
+        <p className="text-xs text-gray-600">No incidents formed yet.</p>
+      ) : (
+        <>
+          <select
+            className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 mb-3 w-full bg-white"
+            value={draftId ?? ""}
+            onChange={(e) => setSelected(e.target.value)}
+          >
+            {items.map((i) => (
+              <option key={i.draft_id} value={i.draft_id}>
+                {i.priority} · {i.title}
+              </option>
+            ))}
+          </select>
+          {!confidence ? (
+            <p className="text-xs text-gray-600">Loading…</p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Actual validation checks (C4)
+                </div>
+                {confidence.validation && confidence.validation.length > 0 ? (
+                  <ul className="text-xs space-y-1">
+                    {confidence.validation.map((c) => (
+                      <li key={c.name} className="flex gap-1.5">
+                        <span className={c.passed ? "text-green-700" : "text-red-700"}>{c.passed ? "✓" : "✕"}</span>
+                        <span>
+                          <b>{c.name}:</b> {c.detail}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-xs text-gray-500">Not recorded for this draft.</p>
+                )}
+              </div>
+              <div>
+                <div className="text-[11px] font-bold uppercase tracking-wide text-gray-500 mb-1.5">
+                  Actual confidence breakdown
+                </div>
+                <ul className="text-xs space-y-1">
+                  {confidence.parts.map((p) => (
+                    <li key={p.label} className="flex justify-between gap-2">
+                      <span>{p.label}</span>
+                      <span className="font-mono font-semibold shrink-0">+{p.points.toFixed(2)}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="text-xs font-bold text-gray-900 mt-1.5 pt-1.5 border-t border-gray-100">
+                  = {confidence.final.toFixed(2)}
+                </div>
+                <div className="text-[11px] text-gray-600 mt-2">
+                  Gate: {Object.entries(confidence.gate_reasons).map(([k, v]) => `${k} (×${v})`).join(", ") || "n/a"}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </Panel>
+  );
+}
+
+/** Pair F1 with one dimension's weight zeroed at a time - measured on the
+ * same held-out seeds the benchmark uses, not asserted. */
+function AblationPanel() {
+  const { data, error } = useEngineAblation();
+  const baseline = data?.find((r) => r.delta === 0 && r.variant.startsWith("baseline"));
+
+  return (
+    <Panel title="Ablation — how load-bearing each dimension actually is">
+      <p className="text-xs text-gray-700 mb-3">
+        Pair F1 on the same held-out seeds as the benchmark below, with one dimension&apos;s weight zeroed at a
+        time. The last row removes the structural gate entirely and clusters on time proximity alone — the
+        brief&apos;s core principle, measured rather than just stated.
+      </p>
+      {error && <p className="text-xs text-red-700">Unavailable: {String(error)}</p>}
+      {!data && !error && <p className="text-xs text-gray-600">Running the ablation sweep (a few seconds, once)…</p>}
+      {data && (
+        <ul className="text-xs space-y-2.5">
+          {data.map((row) => (
+            <li key={row.variant}>
+              <div className="flex items-center justify-between gap-2">
+                <span className="font-medium text-gray-900">{row.variant}</span>
+                <span className="font-mono font-bold tabular-nums shrink-0">
+                  {row.pair_f1.toFixed(3)}
+                  {row.delta != null && row.delta !== 0 && baseline && (
+                    <span className={row.delta < 0 ? "text-red-700" : "text-green-700"}>
+                      {" "}
+                      ({row.delta > 0 ? "+" : ""}
+                      {row.delta.toFixed(3)})
+                    </span>
+                  )}
+                </span>
+              </div>
+              <Bar value={row.pair_f1} />
+              {row.note && <p className="text-[11px] text-gray-600 mt-1">{row.note}</p>}
+            </li>
+          ))}
+        </ul>
+      )}
+    </Panel>
+  );
+}
+
+/** Calibration: does a 0.8 confidence incident actually turn out right 80%
+ * of the time? Bucketed from the same held-out benchmark runs. */
+function ReliabilityPanel() {
+  const { data, error } = useEngineReliability();
+
+  return (
+    <Panel title="Calibration — predicted confidence vs. actual accuracy">
+      <p className="text-xs text-gray-700 mb-3">
+        Every incident the benchmark formed, bucketed by its own predicted correlation confidence, against how
+        pure it actually was against the generator&apos;s answer key. Well-calibrated tracks the diagonal;
+        a gap means the confidence score over- or under-states how much to trust the incident.
+      </p>
+      {error && <p className="text-xs text-red-700">Unavailable: {String(error)}</p>}
+      {!data && !error && <p className="text-xs text-gray-600">Loading…</p>}
+      {data && (
+        <table className="w-full text-xs">
+          <thead className="text-gray-500 text-left">
+            <tr>
+              <th className="py-1">confidence bucket</th>
+              <th>predicted</th>
+              <th>actual</th>
+              <th>n</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-100">
+            {data.map((b) => (
+              <tr key={b.bucket}>
+                <td className="py-1.5 font-mono">{b.bucket}</td>
+                <td className="font-mono">{b.predicted.toFixed(2)}</td>
+                <td
+                  className={clsx(
+                    "font-mono font-bold",
+                    Math.abs(b.actual - b.predicted) > 0.15 ? "text-amber-700" : "text-gray-900"
+                  )}
+                >
+                  {b.actual.toFixed(2)}
+                </td>
+                <td className="text-gray-500">{b.n}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </Panel>
+  );
+}
+
 export function CorrelationsClient() {
   const { data: rejections } = useValidationRejections();
 
@@ -49,6 +241,13 @@ export function CorrelationsClient() {
         title="Correlation & validation"
         subtitle="How signals become an incident: a structural gate, a five-dimension similarity score, DBSCAN, causal refinement, then validation. Time alone never links two signals."
       />
+
+      <LiveIncidentPanel />
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
+        <AblationPanel />
+        <ReliabilityPanel />
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <Panel title="1 · Structural gate (must pass before any score is computed)">

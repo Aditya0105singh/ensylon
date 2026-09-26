@@ -760,6 +760,21 @@ def engine_benchmark() -> dict:
     return benchmark_mod.benchmark()
 
 
+@router.get("/benchmark/ablation")
+def engine_benchmark_ablation() -> list[dict]:
+    """Pair F1 with one similarity dimension zeroed out at a time, plus a
+    variant clustering on time proximity alone with the structural gate
+    removed. Computed once per process, same held-out seeds as /benchmark."""
+    return benchmark_mod.ablation()
+
+
+@router.get("/benchmark/reliability")
+def engine_benchmark_reliability() -> list[dict]:
+    """Calibration: predicted correlation confidence vs. actual cluster
+    purity, bucketed in tenths. Computed once per process."""
+    return benchmark_mod.reliability()
+
+
 @offline_router.get("/topologies")
 def list_topologies() -> list[dict]:
     """What /demo/run accepts for `topology`, so the frontend doesn't

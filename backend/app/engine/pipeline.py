@@ -139,8 +139,12 @@ def run(
     queue: ReviewQueue | None = None,
     use_llm: bool = True,
     criticality: dict[str, float] | None = None,
+    weights: dict[str, float] | None = None,
 ) -> PipelineResult:
-    """Run redact → deduplicate → detect → correlate → causal → score → draft → queue."""
+    """Run redact → deduplicate → detect → correlate → causal → score → draft → queue.
+
+    `weights` overrides the correlation dimension weights for this run only
+    (see correlate.similarity); used by the ablation benchmark."""
     report = PipelineReport(signals_ingested=len(signals))
     queue = queue or ReviewQueue()
 
@@ -167,7 +171,7 @@ def run(
 
     # --- correlate ---
     with _Timer(report, "correlate"):
-        clusters, noise, correlation = correlate(signals, graph)
+        clusters, noise, correlation = correlate(signals, graph, weights)
         # Similarity cannot separate two incidents that hit the same service
         # at the same moment; causality can. See causal.refine_clusters.
         clusters, split_notes = causal_mod.refine_clusters(clusters, graph)

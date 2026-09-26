@@ -21,11 +21,26 @@ import statistics
 import time
 from dataclasses import dataclass
 from functools import lru_cache
+from itertools import combinations
+
+from scipy.sparse import csr_matrix
+from sklearn.cluster import DBSCAN
 
 from . import scenarios
-from .correlate import DependencyGraph
+from .correlate import DependencyGraph, EPS, MIN_SAMPLES, default_weights, time_proximity
+from .dedup import deduplicate
+from .detect import detect
 from .pipeline import evaluate, run
+from .redaction import redact_all
 from .review import ReviewQueue
+
+_DIMENSION_LABELS = {
+    "time": "temporal proximity (T)",
+    "service": "service affinity (S)",
+    "dependency": "dependency closeness (D)",
+    "template": "evidence similarity (E)",
+    "component": "component match (C)",
+}
 
 HELD_OUT_SEEDS = tuple(range(21, 41))
 
@@ -47,7 +62,14 @@ CONFIGS = (
 )
 
 
-def _score(config: Config, seeds: tuple[int, ...]) -> dict:
+def _score(
+    config: Config, seeds: tuple[int, ...], weights: dict[str, float] | None = None,
+    points: list[tuple[float, float]] | None = None,
+) -> dict:
+    """`weights` overrides the dimension weights for this sweep only (the
+    ablation benchmark's own runs, never the live engine's). `points`, if
+    given, is appended with one (predicted_confidence, actual_purity) pair per
+    incident formed, for the reliability curve."""
     precision, recall, f1, purity, noise_precision, runtime = [], [], [], [], [], []
     rc_correct = rc_total = exact = signals = 0
     for seed in seeds:
@@ -66,6 +88,7 @@ def _score(config: Config, seeds: tuple[int, ...]) -> dict:
             queue=ReviewQueue(),
             use_llm=False,
             criticality=scenarios.criticality_map(sc),
+            weights=weights,
         )
         runtime.append((time.perf_counter() - started) * 1000)
         ev = evaluate(result, sc.incident_count)
@@ -77,6 +100,13 @@ def _score(config: Config, seeds: tuple[int, ...]) -> dict:
         rc_correct += ev.root_cause_correct
         rc_total += ev.root_cause_total
         exact += int(ev.incidents_formed == ev.incidents_expected)
+        if points is not None:
+            for incident in result.incidents:
+                labels = [s.truth_incident or "NOISE" for s in incident.cluster.signals]
+                if not labels:
+                    continue
+                dominant = max(set(labels), key=labels.count)
+                points.append((incident.cluster.confidence, labels.count(dominant) / len(labels)))
 
     mean = lambda xs: round(statistics.mean(xs), 3) if xs else 0.0
     return {
@@ -117,3 +147,122 @@ def benchmark(seeds: tuple[int, ...] = HELD_OUT_SEEDS) -> dict:
             "root_cause_accuracy": round(rc_correct / rc_total, 3) if rc_total else 0.0,
         },
     }
+
+
+def _time_only_no_gate(seeds: tuple[int, ...]) -> dict:
+    """Cluster on time proximity alone, the shared-context gate removed
+    entirely - the one thing the brief's core principle warns against
+    ("time proximity alone does not prove correlation"). Built standalone
+    rather than by threading a gate-bypass flag through correlate.py, so the
+    gate the live engine depends on every tick is never touched by this."""
+    f1s: list[float] = []
+    for seed in seeds:
+        for config in CONFIGS:
+            sc = scenarios.generate(
+                n_incidents=config.n_incidents, noise_signals=config.noise_signals,
+                seed=seed, stagger_minutes=config.stagger_minutes,
+            )
+            sigs, _counts = redact_all(scenarios.build_signals(sc))
+            sigs, _dedup = deduplicate(sigs)
+            sigs, _detection, _state = detect(sigs, None)
+            anomalous = [s for s in sigs if s.is_anomaly]
+            n = len(anomalous)
+            if n < 2:
+                continue
+
+            rows: list[int] = []
+            cols: list[int] = []
+            data: list[float] = []
+            for i, j in combinations(range(n), 2):
+                t = time_proximity(anomalous[i], anomalous[j])
+                if t == 0.0:
+                    continue
+                distance = 1.0 - t
+                if distance > EPS:
+                    continue
+                rows.extend([i, j])
+                cols.extend([j, i])
+                data.extend([max(distance, 1e-6)] * 2)
+
+            matrix = csr_matrix((data, (rows, cols)), shape=(n, n))
+            labels = (
+                DBSCAN(eps=EPS, min_samples=MIN_SAMPLES, metric="precomputed").fit_predict(matrix)
+                if matrix.nnz else [-1] * n
+            )
+
+            truth: dict[str, list[str]] = {}
+            for s in anomalous:
+                if s.truth_incident:
+                    truth.setdefault(s.truth_incident, []).append(s.id)
+            true_pairs: set[tuple[str, str]] = set()
+            for members in truth.values():
+                true_pairs.update((a, b) if a < b else (b, a) for a, b in combinations(sorted(members), 2))
+
+            clustered: dict[int, list[str]] = {}
+            for idx, label in enumerate(labels):
+                if label == -1:
+                    continue
+                clustered.setdefault(int(label), []).append(anomalous[idx].id)
+            predicted_pairs: set[tuple[str, str]] = set()
+            for members in clustered.values():
+                predicted_pairs.update((a, b) if a < b else (b, a) for a, b in combinations(sorted(members), 2))
+
+            correct = true_pairs & predicted_pairs
+            p = len(correct) / len(predicted_pairs) if predicted_pairs else 0.0
+            r = len(correct) / len(true_pairs) if true_pairs else 0.0
+            f1s.append(2 * p * r / (p + r) if (p + r) else 0.0)
+
+    return {
+        "variant": "time proximity only, structural gate removed",
+        "pair_f1": round(statistics.mean(f1s), 3) if f1s else 0.0,
+        "delta": None,
+        "note": "isolates the brief's core principle: time alone, with no shared-context gate",
+    }
+
+
+@lru_cache(maxsize=1)
+def ablation(seeds: tuple[int, ...] = HELD_OUT_SEEDS) -> list[dict]:
+    """Zero one similarity dimension's weight at a time and re-measure pair
+    F1 on the same held-out estates `benchmark()` uses, to show how
+    load-bearing each dimension actually is.
+
+    Weights are passed explicitly into this sweep's own runs (see
+    correlate.similarity / pipeline.run) - the live engine keeps reading its
+    own module-level weights throughout, unaffected by this running
+    concurrently."""
+    base = benchmark(seeds)["overall"]["pair_f1"]
+    rows = [{"variant": "baseline (all five dimensions)", "pair_f1": base, "delta": 0.0}]
+    for dim, label in _DIMENSION_LABELS.items():
+        w = default_weights()
+        w[dim] = 0.0
+        f1 = round(statistics.mean(_score(c, seeds, weights=w)["pair_f1"] for c in CONFIGS), 3)
+        rows.append({"variant": f"without {label}", "pair_f1": f1, "delta": round(f1 - base, 3)})
+    rows.append(_time_only_no_gate(seeds))
+    return rows
+
+
+@lru_cache(maxsize=1)
+def reliability(seeds: tuple[int, ...] = HELD_OUT_SEEDS) -> list[dict]:
+    """Calibration curve: bucket every incident the benchmark formed by its
+    own predicted correlation confidence, and compare against how pure that
+    incident actually was against the generator's answer key. A bucket that
+    sits well above the diagonal is confidence that overstates how much to
+    trust the incident; well below, confidence that understates it."""
+    points: list[tuple[float, float]] = []
+    for config in CONFIGS:
+        _score(config, seeds, points=points)
+
+    buckets: dict[int, list[tuple[float, float]]] = {}
+    for predicted, actual in points:
+        idx = min(9, int(predicted * 10))
+        buckets.setdefault(idx, []).append((predicted, actual))
+
+    return [
+        {
+            "bucket": f"{idx / 10:.1f}-{(idx + 1) / 10:.1f}",
+            "predicted": round(statistics.mean(v[0] for v in buckets[idx]), 3),
+            "actual": round(statistics.mean(v[1] for v in buckets[idx]), 3),
+            "n": len(buckets[idx]),
+        }
+        for idx in sorted(buckets)
+    ]

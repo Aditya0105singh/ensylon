@@ -332,6 +332,24 @@ export interface EngineBenchmark {
   };
 }
 
+/** GET /engine/benchmark/ablation — pair F1 with one dimension's weight
+ * zeroed at a time, plus the gate-removed, time-only variant. */
+export interface AblationRow {
+  variant: string;
+  pair_f1: number;
+  delta: number | null;
+  note?: string;
+}
+
+/** GET /engine/benchmark/reliability — predicted confidence vs. actual
+ * cluster purity, bucketed in tenths. */
+export interface ReliabilityBucket {
+  bucket: string;
+  predicted: number;
+  actual: number;
+  n: number;
+}
+
 /** GET /engine/stream/status - see backend/app/engine/live.py. */
 export interface StreamReaderStatus {
   name: string;

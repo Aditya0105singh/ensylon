@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import useSWR, { useSWRConfig, SWRConfiguration } from "swr";
 import { useApi } from "@/shared/lib/hooks/useApi";
 import type {
+  AblationRow,
   AuditEntry,
   DemoRunRequest,
   DraftDetail,
@@ -12,6 +13,7 @@ import type {
   LateSignalResult,
   PipelineReport,
   QueueSummary,
+  ReliabilityBucket,
   Topology,
   StreamStatus,
   StreamMetrics,
@@ -126,6 +128,26 @@ export const useEngineBenchmark = (options: SWRConfiguration = {}) => {
   const api = useApi();
   return useSWR<EngineBenchmark>(
     api.isReady() ? "/engine/benchmark" : null,
+    (url: string) => api.get(url),
+    { revalidateOnFocus: false, revalidateIfStale: false, ...options }
+  );
+};
+
+/** GET /engine/benchmark/ablation — deterministic, fetched once. */
+export const useEngineAblation = (options: SWRConfiguration = {}) => {
+  const api = useApi();
+  return useSWR<AblationRow[]>(
+    api.isReady() ? "/engine/benchmark/ablation" : null,
+    (url: string) => api.get(url),
+    { revalidateOnFocus: false, revalidateIfStale: false, ...options }
+  );
+};
+
+/** GET /engine/benchmark/reliability — deterministic, fetched once. */
+export const useEngineReliability = (options: SWRConfiguration = {}) => {
+  const api = useApi();
+  return useSWR<ReliabilityBucket[]>(
+    api.isReady() ? "/engine/benchmark/reliability" : null,
     (url: string) => api.get(url),
     { revalidateOnFocus: false, revalidateIfStale: false, ...options }
   );

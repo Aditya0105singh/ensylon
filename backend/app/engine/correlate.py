@@ -283,9 +283,13 @@ class SimilarityBreakdown:
 
 
 def similarity(
-    a: Signal, b: Signal, graph: DependencyGraph
+    a: Signal, b: Signal, graph: DependencyGraph, weights: dict[str, float] | None = None
 ) -> SimilarityBreakdown | None:
-    """Score a pair, or return None if the shared-context gate rejects it."""
+    """Score a pair, or return None if the shared-context gate rejects it.
+
+    `weights` overrides the learned/default weights for this call only - used
+    by the ablation benchmark to test a variant without touching the module
+    constants a concurrently running live engine also reads."""
     gate = _gate_reason(a, b, graph)
     if gate is None:
         return None
@@ -298,7 +302,7 @@ def similarity(
     d = graph.closeness(a.service, b.service)
     tpl = template_similarity(a, b)
     c = component_match(a, b)
-    w = weights_for(a.service, b.service)
+    w = weights if weights is not None else weights_for(a.service, b.service)
     total = (w["time"] * t + w["service"] * s + w["dependency"] * d + w["template"] * tpl
              + w.get("component", 0.0) * c)
     return SimilarityBreakdown(t, s, d, tpl, total, gate, component=c)
@@ -440,13 +444,16 @@ class CorrelationReport:
 
 
 def correlate(
-    signals: list[Signal], graph: DependencyGraph
+    signals: list[Signal], graph: DependencyGraph, weights: dict[str, float] | None = None
 ) -> tuple[list[Cluster], list[Signal], CorrelationReport]:
     """Cluster anomalous signals into incidents.
 
     Only anomalous signals are considered — correlating everything would mean
     clustering healthy traffic, and the whole point of DETECT is to shrink
     what CORRELATE has to reason about.
+
+    `weights` overrides the default dimension weights for this call only; see
+    `similarity()`. Used by the ablation benchmark, never by the live engine.
     """
     anomalous = [s for s in signals if s.is_anomaly]
     report = CorrelationReport(input_signals=len(anomalous))
@@ -465,7 +472,7 @@ def correlate(
     breakdowns: dict[tuple[int, int], SimilarityBreakdown] = {}
 
     for i, j in pairs:
-        result = similarity(anomalous[i], anomalous[j], graph)
+        result = similarity(anomalous[i], anomalous[j], graph, weights)
         if result is None:
             report.gate_rejected += 1
             continue
