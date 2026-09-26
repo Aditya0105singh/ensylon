@@ -383,6 +383,49 @@ class ReviewQueue:
         self._log(actor, "resolve", draft_id, "incident resolved")
         return item
 
+    def restore_decision(self, draft_id: str, action: str, actor: str, at: datetime,
+                         ticket_key: str | None = None, note: str = "",
+                         edits: dict[str, Any] | None = None, into: str | None = None) -> QueueItem | None:
+        """Re-apply a decision recorded before a restart (see engine/archive.py).
+
+        Writes nothing: an approved incident's ticket already exists, so it is
+        re-registered - never created again - and later evidence still lands
+        on it as a comment. No approval token is minted and nobody is paged.
+        """
+        item = self.items.get(draft_id)
+        if item is None:
+            return None
+        if action in (ReviewAction.APPROVE.value, ReviewAction.EDIT_AND_APPROVE.value):
+            editable = getattr(item.draft, "EDITABLE", ())
+            for name, value in (edits or {}).items():
+                if name in editable:
+                    setattr(item.draft, name, value)
+            item.status = DraftStatus.PUBLISHED
+            item.draft.status = DraftStatus.PUBLISHED.value
+            item.jira_key = ticket_key
+            if ticket_key:
+                self.jira._published[draft_id] = {"id": ticket_key, "key": ticket_key}
+            item.move("published", f"restored after restart: approved by {actor}")
+        elif action == ReviewAction.REJECT.value:
+            item.status = DraftStatus.REJECTED
+            item.draft.status = DraftStatus.REJECTED.value
+            item.note = note
+        elif action == ReviewAction.MERGE.value:
+            item.status = DraftStatus.MERGED
+            item.draft.status = DraftStatus.MERGED.value
+            item.merged_into = into
+            item.note = note
+        elif action == "resolve":
+            if item.status != DraftStatus.PUBLISHED:
+                return item
+            item.move("resolved", f"restored after restart: resolved by {actor}")
+        else:
+            return item
+        item.reviewer = actor
+        item.decided_at = at
+        self._log("system", "restored", draft_id, f"{action} by {actor}, recorded {at.isoformat()}")
+        return item
+
     # -- internals -------------------------------------------------------
 
     def _page(self, item: QueueItem, reason: str) -> None:
