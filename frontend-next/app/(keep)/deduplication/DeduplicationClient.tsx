@@ -47,7 +47,7 @@ export function DeduplicationClient() {
         <h2 className="text-sm font-bold text-gray-900 mb-1">How a repeat is recognised</h2>
         <p>
           Fingerprint = <b>service + component + condition</b>, inside a {d.bucket_minutes}-minute window. For logs the condition is the mined Drain3
-          template, so "pool exhausted: 100/100" and "pool exhausted: 99/100" are the same condition. For CloudWatch and Grafana it is the alarm or
+          template, so &quot;pool exhausted: 100/100&quot; and &quot;pool exhausted: 99/100&quot; are the same condition. For CloudWatch and Grafana it is the alarm or
           metric name. The earliest signal survives and carries the repeat count; a repeat never creates a second signal, and never a second incident.
         </p>
       </div>

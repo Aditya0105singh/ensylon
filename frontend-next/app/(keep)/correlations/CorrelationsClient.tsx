@@ -103,7 +103,7 @@ export function CorrelationsClient() {
           </div>
           <ul className="text-xs text-gray-800 space-y-0.5">
             <li><b>blast</b> = 0.7·min(services/5, 1) + 0.3·min(further dependents of the root/5, 1)</li>
-            <li><b>criticality</b> = highest criticality among involved services (the brief's 0–100 map; unknown = 50)</li>
+            <li><b>criticality</b> = highest criticality among involved services (the brief&apos;s 0–100 map; unknown = 50)</li>
             <li><b>magnitude</b> = strongest anomaly_score in the incident</li>
             <li>P1 ≥ 75 · P2 ≥ 50 · P3 ≥ 25 · P4 below</li>
           </ul>
