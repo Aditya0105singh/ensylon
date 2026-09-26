@@ -75,6 +75,8 @@ class StreamEngine:
         self.criticality = criticality
         self.queue = queue or ReviewQueue()
         self.report = PipelineReport()
+        self.report.dedup_bucket_minutes = DEDUP_BUCKET_MIN
+        self._seen_causal_splits: set[str] = set()
         self.result = PipelineResult(
             incidents=[], noise=[], signals=[], report=self.report,
             queue=self.queue, detector_state=DetectorState(),
@@ -185,6 +187,7 @@ class StreamEngine:
             batch, dedup_report = deduplicate(batch)
             self.report.unique_signals += dedup_report.unique_signals
             self.report.dedup_collapsed += dedup_report.collapsed
+            self._update_dedup_pct()
             self.dedup_in += dedup_report.raw_signals
             self.dedup_out += dedup_report.unique_signals
             batch, detection, self.result.detector_state = detect(batch, self.result.detector_state)
@@ -211,6 +214,12 @@ class StreamEngine:
                     self.pending.append(s)
 
     # -- metrics --------------------------------------------------------------
+
+    def _update_dedup_pct(self) -> None:
+        total = self.report.unique_signals + self.report.dedup_collapsed
+        self.report.dedup_collapsed_pct = (
+            round(100.0 * self.report.dedup_collapsed / total, 1) if total else 0.0
+        )
 
     def _record_volume(self, s: Signal, src: str) -> None:
         minute = s.timestamp.replace(second=0, microsecond=0).isoformat()
@@ -255,6 +264,7 @@ class StreamEngine:
                 p.occurrence_count += s.occurrence_count
                 p.anomaly_score = max(p.anomaly_score, s.anomaly_score)
                 self.report.dedup_collapsed += s.occurrence_count
+                self._update_dedup_pct()
                 self.dedup_out -= 1
                 self._track_repeat(s, s.occurrence_count)
                 return True
@@ -289,7 +299,11 @@ class StreamEngine:
         if not clusters:
             return 0
         clusters, splits = causal_mod.refine_clusters(clusters, self.graph)
-        self.report.causal_splits.extend(splits)
+        # The same still-unresolved cluster is re-evaluated every tick, so the
+        # same split note would otherwise repeat once per tick indefinitely.
+        new_splits = [s for s in splits if s not in self._seen_causal_splits]
+        self._seen_causal_splits.update(new_splits)
+        self.report.causal_splits.extend(new_splits)
         verdict = validate_mod.validate(clusters, self.graph)
 
         for rejected, checks in verdict.rejected:
