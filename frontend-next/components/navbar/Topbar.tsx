@@ -21,6 +21,8 @@ export function Topbar({ session }: { session: Session | null }) {
   const total = status?.streams.length ?? 0;
   const up = status?.streams.filter((s) => s.connected).length ?? 0;
   const healthy = total > 0 && up === total;
+  // A replay is never reported as live.
+  const replaying = !!status?.replay?.active;
   // The bell counts drafts waiting for a human decision: the one number an
   // on-call reviewer actually needs, and it clears itself as they are decided.
   const bellCount = (queue ?? []).filter((q) => q.status === "awaiting_review").length;
@@ -41,9 +43,11 @@ export function Topbar({ session }: { session: Session | null }) {
       <div className="flex items-center gap-2.5 ml-auto">
         <Link
           href="/settings"
-          className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-shadow hover:shadow-md ${healthy ? "border-green-200" : "border-gray-200"}`}
+          className={`hidden sm:inline-flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-shadow hover:shadow-md ${replaying ? "border-amber-300" : healthy ? "border-green-200" : "border-gray-200"}`}
           style={
-            healthy
+            replaying
+              ? { background: "#fffbeb", color: "#92400e", boxShadow: "0 1px 2px rgba(146,64,14,0.10)" }
+              : healthy
               ? {
                   background: "linear-gradient(135deg,#f0fdf4,#dcfce7)",
                   color: "#15803d",
@@ -57,7 +61,7 @@ export function Topbar({ session }: { session: Session | null }) {
           }
         >
           <span className="relative flex w-2 h-2">
-            {healthy && (
+            {healthy && !replaying && (
               <span
                 className="absolute inline-flex w-full h-full rounded-full opacity-60 animate-ping"
                 style={{ background: "#22c55e" }}
@@ -65,10 +69,10 @@ export function Topbar({ session }: { session: Session | null }) {
             )}
             <span
               className="relative inline-flex w-2 h-2 rounded-full"
-              style={{ background: healthy ? "#22c55e" : "#9ca3af" }}
+              style={{ background: replaying ? "#f59e0b" : healthy ? "#22c55e" : "#9ca3af" }}
             />
           </span>
-          {!status ? "Backend offline" : healthy ? `Streams live ${up}/${total}` : `Streams ${up}/${total} connected`}
+          {!status ? "Backend offline" : replaying ? "Replay · not live" : healthy ? `Streams live ${up}/${total}` : `Streams ${up}/${total} connected`}
         </Link>
 
         <Link

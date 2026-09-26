@@ -18,7 +18,7 @@ function heardTone(seconds: number | null): string {
   return "text-red-700";
 }
 
-function StreamRow({ s }: { s: StreamReaderStatus }) {
+function StreamRow({ s, replaying }: { s: StreamReaderStatus; replaying: boolean }) {
   const heard = s.last_heard_seconds_ago;
   const skipped = s.skipped ?? 0;
   return (
@@ -27,8 +27,8 @@ function StreamRow({ s }: { s: StreamReaderStatus }) {
         <span className={clsx("w-2 h-2 rounded-full shrink-0", s.connected && "kpi-pulse-soft")} style={{ background: s.connected ? SOURCE_COLOR[s.source] ?? "#64748b" : "#dc2626" }} />
         <span className="text-xs font-bold text-gray-900 truncate">{STREAM_LABEL[s.name] ?? s.name}</span>
         <span className={clsx("ml-auto text-[10.5px] font-bold rounded-full px-2 py-0.5 shrink-0",
-          s.connected ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}>
-          {s.connected ? "live" : "reconnecting"}
+          replaying ? "bg-amber-100 text-amber-800" : s.connected ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800")}>
+          {replaying ? "replay" : s.connected ? "live" : "reconnecting"}
         </span>
       </div>
       <div className="mt-0.5 pl-4 text-[11px] text-gray-700">
@@ -46,7 +46,7 @@ function StreamRow({ s }: { s: StreamReaderStatus }) {
   );
 }
 
-export function StreamsPanel({ streams, metrics }: { streams: StreamReaderStatus[]; metrics?: StreamMetrics }) {
+export function StreamsPanel({ streams, metrics, replaying = false }: { streams: StreamReaderStatus[]; metrics?: StreamMetrics; replaying?: boolean }) {
   const hhmm = (iso: string) => new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" });
   const rows = (metrics?.timeline ?? []).slice(-30).map((r) => ({
     label: hhmm(r.minute),
@@ -57,7 +57,7 @@ export function StreamsPanel({ streams, metrics }: { streams: StreamReaderStatus
   return (
     <div className="flex flex-col gap-3">
       <ul className="divide-y divide-gray-100">
-        {streams.map((s) => <StreamRow key={s.name} s={s} />)}
+        {streams.map((s) => <StreamRow key={s.name} s={s} replaying={replaying} />)}
       </ul>
       {anySkipped && (
         <p className="text-[11px] text-gray-600 rounded-lg bg-gray-50 border border-gray-100 px-2.5 py-1.5">

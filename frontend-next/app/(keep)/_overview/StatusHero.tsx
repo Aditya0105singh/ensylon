@@ -30,10 +30,17 @@ export function StatusHero({ status, incidents }: { status: StreamStatus; incide
   const decided = incidents.filter((q) => q.status === "published" || q.status === "rejected");
 
   const clock = e.stream_clock ? `stream clock ${clockUTC(e.stream_clock)} UTC` : "waiting for the first event";
+  const replaying = !!status.replay?.active;
   const meta = (
     <div className="flex items-center gap-x-3 gap-y-1 flex-wrap text-[11px] text-gray-500">
+      {replaying && <span className="font-bold text-amber-700">REPLAY of a recorded session</span>}
       <span>{clock}</span>
-      <span>watching for {formatDuration(status.uptime_seconds)}</span>
+      <span>{replaying ? "replaying" : "watching"} for {formatDuration(status.uptime_seconds)}</span>
+      {status.resumed && (
+        <span title={`Rebuilt from ${status.resumed.source}, then each stream resumed from its Last-Event-ID`}>
+          resumed {status.resumed.signals.toLocaleString("en-US")} signals after a restart
+        </span>
+      )}
       <span>{status.claude.enabled ? `drafts by Claude (${status.claude.model})` : "drafts by template (no Claude key)"}</span>
     </div>
   );

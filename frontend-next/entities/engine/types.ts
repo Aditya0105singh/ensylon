@@ -348,7 +348,25 @@ export interface StreamReaderStatus {
   last_heard_seconds_ago: number | null;
 }
 
+/** A recording being played back instead of the live streams. */
+export interface ReplayStatus {
+  active: boolean;
+  source?: string;
+  recorded_at?: string | null;
+  speed?: number;
+  from?: string | null;
+  played?: number;
+  total?: number;
+  finished?: boolean;
+}
+
 export interface StreamStatus {
+  /** Present on backends with recording support. */
+  replay?: ReplayStatus;
+  /** Set when this run rebuilt its state from the session recording after a restart. */
+  resumed?: { source: string; signals: number; events: number } | null;
+  /** The recording this run is writing to, if any. */
+  recording?: string | null;
   base_url: string;
   tickets_dir: string;
   graph_origin: string;

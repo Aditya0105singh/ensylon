@@ -10,6 +10,7 @@ import { getConfig } from "@/shared/lib/server/getConfig";
 import { ConfigProvider } from "../config-provider";
 import { PHProvider } from "../posthog-provider";
 import ReadOnlyBanner from "@/components/banners/read-only-banner";
+import { ReplayBanner } from "@/components/banners/ReplayBanner";
 import { IncidentPanelProvider } from "@/entities/alertlens/ui/IncidentPanelProvider";
 import { auth } from "@/auth";
 import { ThemeScript, WatchUpdateTheme, PwaRegister } from "@/shared/ui";
@@ -83,6 +84,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
                   <Topbar session={session} />
                   {/* Add the banner here, before the navbar */}
                   {config.READ_ONLY && <ReadOnlyBanner />}
+                  <ReplayBanner />
                   <div className="flex-1">{children}</div>
                   {/** footer */}
                   {process.env.GIT_COMMIT_HASH &&

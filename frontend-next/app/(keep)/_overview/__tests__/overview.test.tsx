@@ -4,6 +4,7 @@ import { SWRConfig } from "swr";
 import { useApi } from "@/shared/lib/hooks/useApi";
 import type { CanonicalSignal, Evidence, QueueSummary } from "@/entities/engine/types";
 import { LiveOverviewClient } from "../../LiveOverviewClient";
+import { ReplayBanner } from "@/components/banners/ReplayBanner";
 import {
   anomalyFate,
   canonicalSource,
@@ -191,6 +192,41 @@ describe("LiveOverviewClient", () => {
     expect(within(list).getAllByText(/in P1 incident/).length).toBeGreaterThan(0);
     fireEvent.click(rows[0]);
     expect(within(ledger).getByText("What happened:")).toBeInTheDocument();
+  });
+
+  it("never passes a replay off as live", async () => {
+    const status = fx["/engine/stream/status"] as Record<string, unknown>;
+    mockApi({
+      ...routes,
+      "/engine/stream/status": {
+        ...status,
+        replay: { active: true, source: "session-x.jsonl", recorded_at: "2026-09-26T07:40:49Z", speed: 4, played: 120, total: 350, finished: false },
+      },
+    });
+    render(
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, refreshInterval: 0 }}>
+        <ReplayBanner />
+        <LiveOverviewClient />
+      </SWRConfig>
+    );
+    const banner = await screen.findByRole("status", { name: "Replay" });
+    expect(within(banner).getByText("REPLAY · not live")).toBeInTheDocument();
+    expect(within(banner).getByText(/Recorded from the Nexus streams on 26 Sept?,? 07:40 UTC/)).toBeInTheDocument();
+    expect(within(banner).getByText("120 / 350 signals")).toBeInTheDocument();
+    expect(await screen.findByText("REPLAY of a recorded session")).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Recorded streams (replay)" })).toBeInTheDocument();
+    expect(screen.queryByText("live")).not.toBeInTheDocument();
+  });
+
+  it("shows no replay banner on a live run", async () => {
+    render(
+      <SWRConfig value={{ provider: () => new Map(), dedupingInterval: 0, refreshInterval: 0 }}>
+        <ReplayBanner />
+        <LiveOverviewClient />
+      </SWRConfig>
+    );
+    await screen.findByRole("region", { name: "Pipeline" });
+    expect(screen.queryByRole("status", { name: "Replay" })).not.toBeInTheDocument();
   });
 
   it("reads as all clear, with a reason, when nothing needs a human", async () => {

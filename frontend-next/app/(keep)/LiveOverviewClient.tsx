@@ -149,9 +149,13 @@ export function LiveOverviewClient() {
               streamClock={status.engine.stream_clock}
             />
           </Panel>
-          <Panel title="Live streams" sub="SSE with Last-Event-ID resume · keepalive every 15 s never raises anything"
+          <Panel
+            title={status.replay?.active ? "Recorded streams (replay)" : "Live streams"}
+            sub={status.replay?.active
+              ? "Played back from a redacted recording of the three streams"
+              : "SSE with Last-Event-ID resume · keepalive every 15 s never raises anything"}
             right={<Link href="/feed" className="text-xs font-semibold text-green-700 hover:underline shrink-0">Signal feed →</Link>}>
-            <StreamsPanel streams={status.streams} metrics={metrics} />
+            <StreamsPanel streams={status.streams} metrics={metrics} replaying={!!status.replay?.active} />
           </Panel>
         </div>
       )}
