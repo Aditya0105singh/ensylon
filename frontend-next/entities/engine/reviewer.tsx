@@ -37,13 +37,20 @@ export function useReviewer() {
   const { data: session } = useSession();
   const [reviewer, setState] = useState<Reviewer>({ name: "", email: "" });
 
+  const sessionName = session?.user?.name ?? "";
+  const sessionEmail = session?.user?.email ?? "";
+
   useEffect(() => {
     const saved = load();
+    // Only a real sign-in can vouch for who someone is. The no-auth mode's
+    // placeholder session ("Reviewer" / "keep") is not an identity, so it is
+    // never used to prefill a sign-off.
+    const signedIn = isValidEmail(sessionEmail);
     setState({
-      name: saved?.name || session?.user?.name || "",
-      email: saved?.email || session?.user?.email || "",
+      name: saved?.name || (signedIn ? sessionName : ""),
+      email: saved?.email || (signedIn ? sessionEmail : ""),
     });
-  }, [session?.user?.name, session?.user?.email]);
+  }, [sessionName, sessionEmail]);
 
   const setReviewer = useCallback((next: Reviewer) => {
     setState(next);

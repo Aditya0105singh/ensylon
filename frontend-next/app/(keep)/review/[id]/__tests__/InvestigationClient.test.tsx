@@ -194,12 +194,20 @@ describe("InvestigationClient — the review gate", () => {
     renderPage(baseRoutes(), { sessionEmail: null, post });
     await screen.findByText("AWAITING HUMAN REVIEW");
 
+    fireEvent.change(screen.getByLabelText("Reviewer name"), { target: { value: "Aditya Singh" } });
     fireEvent.click(screen.getByRole("button", { name: /^approve$/i }));
 
     await waitFor(() =>
       expect(toast.error).toHaveBeenCalledWith("Enter your email to sign off - every decision is signed with your name and email")
     );
     expect(post).not.toHaveBeenCalled();
+  });
+
+  it("never signs off as the no-auth placeholder session", async () => {
+    renderPage(baseRoutes(), { sessionName: "Reviewer", sessionEmail: "keep" });
+    await screen.findByText("AWAITING HUMAN REVIEW");
+    expect(screen.getByLabelText("Reviewer name")).toHaveValue("");
+    expect(screen.getByLabelText("Reviewer email")).toHaveValue("");
   });
 
   it("approving posts the reviewer's name and email with the decision", async () => {
