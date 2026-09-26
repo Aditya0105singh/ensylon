@@ -1,0 +1,16 @@
+{
+  "name": "Nexus AIOps",
+  "short_name": "Nexus AIOps",
+  "description": "Live correlation of the Nexus signal streams into reviewed incident tickets.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#f97316",
+  "icons": [
+    { "src": "/icons-pwa/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icons-pwa/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icons-pwa/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

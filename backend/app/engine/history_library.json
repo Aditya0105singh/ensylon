@@ -1,0 +1,37 @@
+[
+  {
+    "id": "INC-0417",
+    "title": "Database connection pool exhaustion cascading to API services",
+    "fingerprint": ["connection", "pool", "exhausted", "database", "connect", "timeout", "acquiring", "upstream", "latency", "waiter"],
+    "resolution": "Raised the pool size and shipped a fix for a leaked connection in the order service.",
+    "resolution_minutes": 34
+  },
+  {
+    "id": "INC-0392",
+    "title": "Cache memory pressure causing evictions and slow reads",
+    "fingerprint": ["cache", "memory", "eviction", "evicted", "usage", "database", "read", "latency", "slow", "maxmemory"],
+    "resolution": "Scaled the cache node up and set a TTL on the unbounded session keys.",
+    "resolution_minutes": 22
+  },
+  {
+    "id": "INC-0378",
+    "title": "API memory leak leading to restarts",
+    "fingerprint": ["memory", "utilization", "leak", "heap", "restart", "oom", "killed", "container", "task", "exit"],
+    "resolution": "Rolled back the release that introduced the leak, then patched the buffer that was never released.",
+    "resolution_minutes": 41
+  },
+  {
+    "id": "INC-0355",
+    "title": "Gateway rate limiting after a traffic spike",
+    "fingerprint": ["throttle", "rate", "limit", "throttled", "requests", "gateway", "429", "quota", "burst", "count"],
+    "resolution": "Raised the gateway quota and added client-side backoff for the noisy caller.",
+    "resolution_minutes": 18
+  },
+  {
+    "id": "INC-0341",
+    "title": "Storage volume filling up on a data node",
+    "fingerprint": ["disk", "storage", "space", "free", "full", "volume", "usage", "write", "failed", "inode"],
+    "resolution": "Expanded the volume and added a retention policy for the rotating log directory.",
+    "resolution_minutes": 27
+  }
+]

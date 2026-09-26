@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Secrets — never commit API keys
+.env
+backend/.env
+
+# Large downloaded/cached datasets — regenerate via data/loghub_bgl_loader.py
+data/.cache/
+
+# Local persistence — regenerated on first request, not shared state
+backend/alertlens.db
+
+# Node
+node_modules/
+frontend/dist/
+
+# Next.js frontend (frontend-next)
+frontend-next/.next/
+frontend-next/out/
+frontend-next/next-env.d.ts
+frontend-next/.env.local
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local logs and build artifacts
+*.log
+.cc-history/
+frontend.zip
+
+# Local logs
+*.log
+
+# Approved tickets are run output, not source
+output/

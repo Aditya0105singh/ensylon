@@ -1,0 +1,82 @@
+[
+  {
+    "incident_id": "INC-0389",
+    "title": "Postgres connection pool exhaustion",
+    "date": "2026-06-28",
+    "symptom_pattern": "Database connection pool exhausted, connections queued, upstream API timeouts, HTTP 5xx spike on order endpoints, query statement timeouts",
+    "root_cause": "Connection leak in order-api after deploy 2026-06-28; pool never released connections on aborted transactions",
+    "resolution": "Rolled back order-api to previous release, restarted pgbouncer to clear queued connections",
+    "resolution_minutes": 18,
+    "services_affected": ["postgres-primary", "api-gateway", "order-api", "checkout-service"]
+  },
+  {
+    "incident_id": "INC-0412",
+    "title": "Redis memory pressure with cache stampede",
+    "date": "2026-07-03",
+    "symptom_pattern": "Redis used memory at maxmemory with active key evictions, cache miss rate spike, database CPU climbing from fallthrough reads, session lookup failures logging users out",
+    "root_cause": "TTL misconfiguration cached large session blobs without expiry after session-service release",
+    "resolution": "Flushed session keyspace, restored TTLs, temporarily raised maxmemory and scaled read replicas",
+    "resolution_minutes": 12,
+    "services_affected": ["redis-cache", "session-service", "postgres-primary", "api-gateway"]
+  },
+  {
+    "incident_id": "INC-0367",
+    "title": "Log partition disk full crash-looping workers",
+    "date": "2026-06-19",
+    "symptom_pattern": "Disk usage critical on /var/log, pods crash-looping with no-space-left write errors, kubelet unhealthy, job throughput stalled to zero",
+    "root_cause": "Debug logging left enabled on payment-worker, wrote 40GB in 36 hours; logrotate config missing for the new log path",
+    "resolution": "Truncated logs, disabled debug flag, added logrotate rule and disk-usage alert at 80%",
+    "resolution_minutes": 25,
+    "services_affected": ["worker-node-3", "payment-worker"]
+  },
+  {
+    "incident_id": "INC-0401",
+    "title": "Identity provider JWKS outage cascading auth failures",
+    "date": "2026-07-01",
+    "symptom_pattern": "JWT token validation failures with JWKS endpoint 503, 401 rejection spike at gateway, login success rate collapse across mobile and web clients",
+    "root_cause": "Upstream identity provider rotated signing keys during their maintenance; JWKS cache TTL too short to ride it out",
+    "resolution": "Enabled stale-JWKS fallback cache, extended cache TTL to 24h, added circuit breaker on validation path",
+    "resolution_minutes": 31,
+    "services_affected": ["auth-service", "api-gateway", "mobile-bff", "checkout-service", "support-portal"]
+  },
+  {
+    "incident_id": "INC-0355",
+    "title": "Inter-AZ packet loss from degraded switch",
+    "date": "2026-06-11",
+    "symptom_pattern": "High packet loss between availability zone subnets, gRPC deadline exceeded errors, replica lag climbing, Kafka in-sync replicas shrinking, metric scrape failures",
+    "root_cause": "Failing optic on top-of-rack switch caused intermittent frame drops between subnet-a and subnet-c",
+    "resolution": "Drained traffic to redundant path, replaced optic, verified replica catch-up before restoring",
+    "resolution_minutes": 44,
+    "services_affected": ["network-fabric", "order-api", "inventory-service", "kafka-broker-2"]
+  },
+  {
+    "incident_id": "INC-0378",
+    "title": "Kafka consumer group rebalance storm",
+    "date": "2026-06-23",
+    "symptom_pattern": "Message queue depth rising, consumer lag alerts, repeated consumer group rebalances, notification delivery stalled",
+    "root_cause": "Slow consumer exceeded max.poll.interval, triggering continuous rebalance loop across the group",
+    "resolution": "Raised max.poll.interval.ms, reduced batch size on the slow consumer, lag drained in 20 minutes",
+    "resolution_minutes": 22,
+    "services_affected": ["kafka-broker-2", "notification-service"]
+  },
+  {
+    "incident_id": "INC-0344",
+    "title": "Certificate expiry breaking internal mTLS",
+    "date": "2026-06-05",
+    "symptom_pattern": "TLS handshake failures between internal services, connection refused spikes, health checks failing across the mesh",
+    "root_cause": "Internal CA intermediate certificate expired; auto-renewal job had been silently failing for two weeks",
+    "resolution": "Re-issued intermediate cert, restarted sidecars, added expiry monitoring on the renewal job itself",
+    "resolution_minutes": 52,
+    "services_affected": ["service-mesh", "api-gateway", "order-api"]
+  },
+  {
+    "incident_id": "INC-0420",
+    "title": "Runaway deploy CPU-starving colocated pods",
+    "date": "2026-07-08",
+    "symptom_pattern": "Node CPU saturation, throttled pods, latency degradation on colocated services, HPA scaling storm",
+    "root_cause": "New recommendation-service release missing CPU limits pinned all cores on shared nodes",
+    "resolution": "Applied resource limits, evicted and rescheduled the offending pods, backfilled limit policy in CI",
+    "resolution_minutes": 15,
+    "services_affected": ["worker-node-1", "recommendation-service", "checkout-service"]
+  }
+]

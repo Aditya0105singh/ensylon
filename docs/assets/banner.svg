@@ -1,0 +1,41 @@
+<svg width="1200" height="320" viewBox="0 0 1200 320" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="AlertLens - from raw telemetry to a human-approved ticket">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="320" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#052e16"/>
+      <stop offset="0.55" stop-color="#14532d"/>
+      <stop offset="1" stop-color="#166534"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(980 60) rotate(90) scale(260 420)">
+      <stop offset="0" stop-color="#4ade80" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#4ade80" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pulse" x1="600" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#86efac" stop-opacity="0"/>
+      <stop offset="0.5" stop-color="#86efac" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#bbf7d0" stop-opacity="0.9"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="320" rx="24" fill="url(#bg)"/>
+  <rect width="1200" height="320" rx="24" fill="url(#glow)"/>
+
+  <!-- signal pulse: noisy line on the left resolving into one clean spike -->
+  <path d="M560 236 L590 236 L604 210 L620 258 L636 196 L650 244 L664 226 L690 226 L706 226 L722 150 L738 262 L754 226 L1176 226"
+        stroke="url(#pulse)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <circle cx="722" cy="150" r="6" fill="#bbf7d0"/>
+  <circle cx="722" cy="150" r="14" stroke="#bbf7d0" stroke-opacity="0.35" stroke-width="2"/>
+
+  <!-- logo tile -->
+  <rect x="64" y="72" width="88" height="88" rx="22" fill="#f0fdf4"/>
+  <g transform="translate(76 84) scale(2.5)">
+    <circle cx="14" cy="14" r="9.5" stroke="#15803d" stroke-width="2.5"/>
+    <path d="M9.5 14.5l2.5 0 1.75-4 2.25 7.5 1.75-3.5h2.25" stroke="#15803d" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M21.5 21.5l6 6" stroke="#15803d" stroke-width="3" stroke-linecap="round"/>
+  </g>
+
+  <text x="176" y="130" fill="#f0fdf4" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="58" font-weight="800" letter-spacing="-1">AlertLens</text>
+  <text x="178" y="162" fill="#bbf7d0" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="22">From raw telemetry to a human-approved ticket.</text>
+
+  <text x="64" y="232" fill="#dcfce7" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="19" font-weight="600">Ensylon AIOps Challenge 2026</text>
+  <text x="64" y="262" fill="#86efac" font-family="Segoe UI, Helvetica, Arial, sans-serif" font-size="17">Team Space-X  ·  Pune  ·  26-27 September 2026</text>
+</svg>
