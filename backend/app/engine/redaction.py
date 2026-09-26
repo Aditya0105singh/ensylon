@@ -28,6 +28,8 @@ import hashlib
 import re
 from typing import Any, Callable
 
+from .redaction_names import FIRST_NAMES, NOT_A_SURNAME
+
 # --------------------------------------------------------------------------
 # Structured patterns
 # --------------------------------------------------------------------------
@@ -48,13 +50,25 @@ _PATTERNS: list[tuple[str, re.Pattern[str]]] = [
     ("SESSION", re.compile(r"(?i)\bsession(?:[_ -]?id)?\s*[:=]\s*([A-Za-z0-9_-]{4,})")),
     ("ACCOUNT", re.compile(r"\bACC-\d{4,}\b")),
     ("ACCOUNT", re.compile(r"(?i)\b(?:acc|account(?:[_ -]?(?:id|no|number))?)\s*[:=]\s*([A-Za-z0-9-]{4,})")),
+    # "account 4599120037", "acc no. 88120044": the word, then a long number, no
+    # separator. Six or more digits, so "account 42 requests" is left alone.
+    ("ACCOUNT", re.compile(r"(?i)\b(?:acc(?:ount)?)(?:[_ -]?(?:id|no|num|number))?\.?\s+#?(\d{6,})\b")),
     # AWS account ids are exactly 12 digits (card candidates start at 13).
     ("CLOUD_ACCOUNT", re.compile(r"(?<![\d.-])\d{12}(?![\d.-])")),
     ("SSN", re.compile(r"\b(?!000|666|9\d\d)\d{3}-(?!00)\d{2}-(?!0000)\d{4}\b")),
     # Indian mobile numbers: +91 98765 43210, +91-9876543210, 9876543210.
     ("PHONE", re.compile(r"(?<![\d.])(?:\+91[\s-]?)?[6-9]\d{4}[\s-]?\d{5}(?![\d.])")),
     ("PHONE", re.compile(r"(?<![\d.])(?:\+\d{1,3}[\s-]?)?(?:\(\d{3}\)|\d{3})[\s-]\d{3}[\s-]\d{4}(?![\d.])")),
+    # UK mobiles written nationally, with a separator: 07911 123456, 7911 123456.
+    ("PHONE", re.compile(r"(?<![\d.])0?7\d{3}[\s-]\d{6}(?![\d.])")),
+    # International numbers with a + prefix and separators (+44 7911 123456).
+    ("PHONE", re.compile(r"(?<![\d.])\+\d{1,3}[\s-]\d{3,5}[\s-]\d{4,7}(?![\d.])")),
     ("IPV6", re.compile(r"\b(?:[0-9A-Fa-f]{1,4}:){7}[0-9A-Fa-f]{1,4}\b")),
+    # Compressed forms (2001:db8::1, fe80::1ff:fe23, ::1, 2001:db8::). Every one
+    # contains "::", so times (10:01:05) and ratios never match.
+    ("IPV6", re.compile(r"(?<![\w:])(?:[0-9A-Fa-f]{1,4}:){1,6}(?::[0-9A-Fa-f]{1,4}){1,6}(?![\w:])")),
+    ("IPV6", re.compile(r"(?<![\w:])::(?:[0-9A-Fa-f]{1,4}:){0,6}[0-9A-Fa-f]{1,4}(?![\w:])")),
+    ("IPV6", re.compile(r"(?<![\w:])(?:[0-9A-Fa-f]{1,4}:){1,7}:(?![\w:])")),
     ("IPV4", re.compile(r"\b(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b")),
     ("MRN", re.compile(r"(?i)\b(?:mrn|patient[_-]?id)\b\s*[=:]\s*[\"']?([A-Za-z0-9-]{4,})")),
 ]
@@ -85,9 +99,18 @@ _CARD_CANDIDATE = re.compile(r"\b\d(?:[ -]?\d){12,18}\b")
 
 _NAME_CUE = re.compile(
     r"(?:\b(?:[Cc]ustomer|[Uu]ser|[Cc]lient|[Cc]ontact|[Nn]ame|[Mm]ember|[Aa]gent|[Pp]olicyholder|[Ii]nsured|[Cc]aller)"
-    r"|\b(?:Mr|Mrs|Ms|Dr)\.?)\s*[:=-]?\s*([A-Z][a-z]+(?:\s+[A-Z][a-z]+){1,2})\b"
+    r"|\b(?:Mr|Mrs|Ms|Dr)\.?)\s*[:=-]?\s*"
+    r"((?:[A-Z][a-z]+|[A-Z]{2,})(?:\s+(?:[A-Z][A-Za-z'\u2019-]+|[A-Z]{2,})){1,2})\b"
 )
 _TITLE_BIGRAM = re.compile(r"\b([A-Z][a-z]+)\s+([A-Z][a-z]+)\b")
+# "<FirstName> <Surname>" with no cue word: the first word must be a known first
+# name (redaction_names), so "Circuit Breaker" is left alone. Also accepts
+# upper-case (PRIYA SHARMA), apostrophes/hyphens (Sean O'Brien) and the inverted
+# "Sharma, Priya".
+_WORD = r"(?:[A-Z][a-z]+|[A-Z]{2,})"
+_SURNAME = r"(?:[A-Z][A-Za-z'\u2019-]+|[A-Z]{2,})"
+_GAZETTE_FWD = re.compile(rf"\b({_WORD})\s+({_SURNAME})\b")
+_GAZETTE_INV = re.compile(rf"\b({_SURNAME}),\s+({_WORD})\b")
 _EMAIL_NAME = re.compile(r"\b([A-Za-z]{2,})[._]([A-Za-z]{2,})@")
 _learned_name_hashes: set[str] = set()
 _MAX_LEARNED_NAMES = 20000
@@ -109,12 +132,39 @@ def learn_names(text: str) -> None:
     _learn_names(text)
 
 
+def _scan_names(text: str, pattern: re.Pattern[str], first_group: int, found: list[str]) -> str:
+    """Redact `<FirstName> <Surname>` pairs. A rejected candidate does not
+    consume its second word: in "Call Rohan Mehta" the pair "Call Rohan" is not
+    a name, but "Rohan Mehta" still has to be examined."""
+    surname_group = 2 if first_group == 1 else 1
+    out: list[str] = []
+    pos = 0
+    scan_from = 0
+    while True:
+        m = pattern.search(text, scan_from)
+        if m is None:
+            break
+        first, other = m.group(first_group), m.group(surname_group)
+        if first.lower() in FIRST_NAMES and other.lower() not in NOT_A_SURNAME:
+            out.append(text[pos:m.start()])
+            out.append("[REDACTED:NAME]")
+            found.append("NAME")
+            pos = scan_from = m.end()
+        else:
+            scan_from = m.start(2)
+    out.append(text[pos:])
+    return "".join(out)
+
+
 def _redact_names(text: str, found: list[str]) -> str:
     def _cue(match: re.Match[str]) -> str:
         found.append("NAME")
         return match.group(0).replace(match.group(1), "[REDACTED:NAME]")
 
     text = _NAME_CUE.sub(_cue, text)
+
+    text = _scan_names(text, _GAZETTE_FWD, first_group=1, found=found)
+    text = _scan_names(text, _GAZETTE_INV, first_group=2, found=found)
     if _learned_name_hashes:
         def _known(match: re.Match[str]) -> str:
             if _name_hash(f"{match.group(1)} {match.group(2)}") in _learned_name_hashes:

@@ -245,6 +245,17 @@ class CorrectionFeedback:
     adjustment: dict | None = None   # before/after similarity weights, if any
 
 
+def _redact_edit(value: Any) -> Any:
+    """Run edited text through the same redaction as every other input."""
+    from .redaction import redact_text
+
+    if isinstance(value, str):
+        return redact_text(value)[0]
+    if isinstance(value, list):
+        return [_redact_edit(v) for v in value]
+    return value
+
+
 class ReviewQueue:
     """Holds drafts awaiting a human decision. The only minter of approvals."""
 
@@ -290,8 +301,10 @@ class ReviewQueue:
                 raise ValueError(f"not editable: {', '.join(refused)} (editable: {', '.join(editable)})")
             if "priority" in edits and edits["priority"] not in ("P1", "P2", "P3", "P4"):
                 raise ValueError("priority must be one of P1, P2, P3, P4")
+            # A reviewer can paste anything into a free-text field; the rule that no
+            # raw PII reaches storage or a ticket applies to what a human types too.
             for field_name, value in edits.items():
-                setattr(item.draft, field_name, value)
+                setattr(item.draft, field_name, _redact_edit(value))
             action = ReviewAction.EDIT_AND_APPROVE
 
         token = self._vault.mint(draft_id, actor)
