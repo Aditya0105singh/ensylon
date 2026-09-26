@@ -25,6 +25,7 @@ from pydantic import BaseModel
 from . import db, security, summarizer
 from .engine import adapters, benchmark as benchmark_mod, scenarios
 from .engine.evidence import build_evidence
+from .engine import archive as archive_mod
 from .engine import feedback as feedback_mod
 from .engine.golden import flapping_scenario, golden_scenario, maintenance_windows
 from .engine.lifecycle import attach_late_signal
@@ -176,16 +177,19 @@ class DemoRunRequest(BaseModel):
 
 class ApproveRequest(BaseModel):
     actor: str
+    actor_email: str | None = None   # required on a live run: see _signer
     edits: dict[str, Any] | None = None
 
 
 class RejectRequest(BaseModel):
     actor: str
+    actor_email: str | None = None   # required on a live run: see _signer
     note: str = ""
 
 
 class MergeRequest(BaseModel):
     actor: str
+    actor_email: str | None = None   # required on a live run: see _signer
     into: str
     note: str = ""
 
@@ -440,16 +444,146 @@ def get_draft(draft_id: str) -> dict:
     return _draft_detail(item)
 
 
+# --------------------------------------------------------------------------
+# sign-off identity and the incident archive (engine/archive.py)
+# --------------------------------------------------------------------------
+
+import logging as _logging
+import re as _re
+from datetime import datetime as _datetime
+
+_log = _logging.getLogger(__name__)
+_EMAIL = _re.compile(r"^[^@\s<>]+@[^@\s<>]+\.[^@\s<>]+$")
+# On for a live run (start_live): every incident and every decision is archived
+# for post-incident review. Off for tests, offline scenarios and replays.
+_ARCHIVE = False
+# On for a connected run (start_live): a sign-off must carry the reviewer's email.
+_REQUIRE_EMAIL = False
+
+
+def _signer(actor: str, email: str | None) -> tuple[str, str | None, str]:
+    """(name, email, the actor string the queue records). A live sign-off must
+    carry an email: a decision reviewed days later has to say who, reachably.
+    Once authentication exists, both come from the session instead."""
+    name = (actor or "").strip()
+    mail = (email or "").strip() or None
+    if mail and not _EMAIL.match(mail):
+        raise HTTPException(400, f"not a valid email address: {mail!r}")
+    if _REQUIRE_EMAIL and name and not mail:
+        raise HTTPException(400, "a sign-off needs the reviewer's email as well as their name")
+    return name, mail, (f"{name} <{mail}>" if name and mail else name)
+
+
+def _snapshot(draft_id: str):
+    """(summary, detail, evidence) for one incident, as the API serves them. Caller holds _LOCK."""
+    item = _state.queue.items.get(draft_id) if _state.queue else None
+    if item is None:
+        return None
+    ev = None
+    if _state.result is not None and _state.graph is not None:
+        for inc in _state.result.incidents:
+            if inc.draft.draft_id == draft_id:
+                ev = build_evidence(inc, _state.graph, _state.result.noise)
+                break
+    summary = _queue_summary(item)
+    raised = _live.engine.raised_at.get(draft_id) if _live is not None else None
+    if raised is not None:
+        summary["raised_at"] = raised.isoformat()
+    return summary, _draft_detail(item), ev
+
+
+def _source() -> str | None:
+    from .engine import live as live_mod
+    return live_mod.BASE_URL
+
+
+def _archive_decision(draft_id: str, action: str, name: str, email: str | None,
+                      note: str = "", changes: dict | None = None) -> None:
+    """Snapshot the incident as decided, then append the decision. Caller holds _LOCK.
+    Never fails the request: the ticket (if any) is already written."""
+    if not _ARCHIVE:
+        return
+    try:
+        snap = _snapshot(draft_id)
+        if snap:
+            archive_mod.record_incident(*snap, source=_source())
+        item = _state.queue.items.get(draft_id)
+        archive_mod.record_decision(draft_id, action, name, email, note=note, changes=changes,
+                                    status=item.status.value if item else None,
+                                    ticket_key=item.jira_key if item else None)
+    except Exception:
+        _log.exception("could not archive %s on %s", action, draft_id)
+
+
+def _archive_touched(summary: dict) -> None:
+    """Live tick hook: snapshot every incident raised or grown this tick."""
+    ids = summary.get("touched") or []
+    if not _ARCHIVE or not ids:
+        return
+    with _LOCK:
+        snaps = [snap for snap in (_snapshot(d) for d in ids) if snap]
+    for snap in snaps:
+        try:
+            archive_mod.record_incident(*snap, source=_source())
+        except Exception:
+            _log.exception("could not archive %s", snap[0].get("draft_id"))
+
+
+def _restore_decisions() -> int:
+    """After a restart the engine rebuilds its incidents from the recording;
+    this re-applies every human decision recorded against them, in order."""
+    with _LOCK:
+        ids = list(_state.queue.items)
+    history = archive_mod.decision_history(ids)
+    restored = 0
+    with _LOCK:
+        for draft_id, decisions in history.items():
+            for d in decisions:
+                who = d["actor"]
+                actor = f"{who['name']} <{who['email']}>" if who.get("email") else who["name"]
+                changes = d.get("changes") or {}
+                into = changes.get("into", {}).get("after") if isinstance(changes.get("into"), dict) else None
+                edits = {k: v.get("after") for k, v in changes.items() if k != "into" and isinstance(v, dict)}
+                if _state.queue.restore_decision(draft_id, d["action"], actor, _datetime.fromisoformat(d["at"]),
+                                                 d.get("ticket_key"), d.get("note", ""), edits, into):
+                    restored += 1
+    return restored
+
+
+@router.get("/history")
+def history(hours: float | None = None, status: str | None = None, service: str | None = None,
+            q: str | None = None, limit: int = 500) -> list[dict]:
+    """Every archived incident, newest first, across sessions and restarts -
+    for the review a day or two later. Filters: last `hours`, `status`,
+    `service`, free text `q` (title, services, reviewer)."""
+    return archive_mod.list_incidents(hours, status, service, q, limit)
+
+
+@router.get("/history/{draft_id}")
+def history_item(draft_id: str) -> dict:
+    """One archived incident: its snapshot, evidence and full sign-off trail."""
+    record = archive_mod.get_incident(draft_id)
+    if record is None:
+        raise HTTPException(404, f"no archived incident {draft_id}")
+    return record
+
+
 def _approve_unlocked(draft_id: str, body: ApproveRequest) -> dict:
     """The one path to Jira. See app/engine/review.py — this route is a
     thin wrapper; every guarantee (approval token, single-use, audit log)
     is enforced inside ReviewQueue.approve, not here."""
+    name, email, actor = _signer(body.actor, body.actor_email)
+    current = _state.queue.items.get(draft_id) if _state.queue else None
+    before = {k: getattr(current.draft, k, None) for k in (body.edits or {})} if current else {}
     try:
-        item = _state.queue.approve(draft_id, body.actor, body.edits)
+        item = _state.queue.approve(draft_id, actor, body.edits)
     except KeyError as e:
         raise HTTPException(404, str(e))
     except Exception as e:  # ApprovalRequired and friends
         raise HTTPException(400, str(e))
+    changes = {k: {"before": before.get(k), "after": v} for k, v in (body.edits or {}).items()} or None
+    _archive_decision(draft_id, "edit_and_approve" if body.edits else "approve", name, email,
+                      note=f"ticket {item.jira_key} written" if item.jira_key else "", changes=changes)
     return _draft_detail(item)
 
 
@@ -510,37 +644,45 @@ def late_signal(draft_id: str, body: LateSignalRequest) -> dict:
 
 class ResolveRequest(BaseModel):
     actor: str
+    actor_email: str | None = None
 
 
 def _resolve_unlocked(draft_id: str, body: ResolveRequest) -> dict:
+    name, email, actor = _signer(body.actor, body.actor_email)
     try:
-        item = _state.queue.resolve(draft_id, body.actor)
+        item = _state.queue.resolve(draft_id, actor)
     except KeyError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
         raise HTTPException(400, str(e))
+    _archive_decision(draft_id, "resolve", name, email, note="incident resolved")
     return _draft_detail(item)
 
 
 def _reject_unlocked(draft_id: str, body: RejectRequest) -> dict:
+    name, email, actor = _signer(body.actor, body.actor_email)
     try:
-        item = _state.queue.reject(draft_id, body.actor, body.note)
+        item = _state.queue.reject(draft_id, actor, body.note)
     except KeyError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
         raise HTTPException(400, str(e))
     _apply_feedback(item, "reject")
+    _archive_decision(draft_id, "reject", name, email, note=body.note)
     return _draft_detail(item)
 
 
 def _merge_unlocked(draft_id: str, body: MergeRequest) -> dict:
+    name, email, actor = _signer(body.actor, body.actor_email)
     try:
-        item = _state.queue.merge(draft_id, body.into, body.actor, body.note)
+        item = _state.queue.merge(draft_id, body.into, actor, body.note)
     except KeyError as e:
         raise HTTPException(404, str(e))
     except Exception as e:
         raise HTTPException(400, str(e))
     _apply_feedback(item, "merge")
+    _archive_decision(draft_id, "merge", name, email, note=body.note,
+                      changes={"into": {"before": None, "after": body.into}})
     return _draft_detail(item)
 
 
@@ -843,8 +985,19 @@ def start_live(connect: bool = True):
         _state.criticality = runtime.engine.criticality
         _state.evaluation = None
         _state.scenario_desc = f"live: Nexus signal streams ({live_mod.BASE_URL})"
+    runtime.on_tick = _archive_touched
     runtime.start(connect=connect)
     _live = runtime
+    # A live (not replayed) run keeps the incident archive; after a restart it
+    # re-applies the decisions reviewers already made.
+    global _ARCHIVE, _REQUIRE_EMAIL
+    _REQUIRE_EMAIL = bool(connect)
+    _ARCHIVE = bool(connect) and not live_mod.REPLAY
+    if _ARCHIVE:
+        archive_mod.init()
+        restored = _restore_decisions()
+        if restored:
+            _log.info("restored %d review decisions from the incident archive", restored)
     return runtime
 
 

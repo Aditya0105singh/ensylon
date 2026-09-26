@@ -495,6 +495,7 @@ class LiveRuntime:
                 with self.lock:
                     summary = self.engine.tick()
                     touched, self.engine.touched = self.engine.touched, set()
+                summary["touched"] = sorted(touched)     # drafts raised or grown this tick
                 if self.narrator is not None:
                     for draft_id in touched:
                         self.narrator.submit(draft_id)
