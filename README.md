@@ -261,7 +261,9 @@ rulesforge batch job, agency-db pool exhaustion, rulesforge slow query, comms SM
 Known limits: (1) Grafana evaluates all its rules at one instant, so alerts of unrelated stories arrive together with
 no wording in common; that leaves one small mixed fragment (8 signals). (2) A story can be split into several incidents
 (completeness 0.65). (3) The labels are our own reading of the wording, not the organisers' answer key; signals that were
-genuinely ambiguous are left out of scoring.
+genuinely ambiguous are left out of scoring. Pair F1 is sensitive to one ambiguous story: 0.57 if the carrier-service leak
+is one incident, 0.69 if it is two phases; purity 0.90 and 13/13 root causes hold either way. Merging fragments by root
+cause and reassigning stray signals were both tried and rejected (`docs/FINDINGS_incident_merging.md`).
 
 ## Repository layout
 

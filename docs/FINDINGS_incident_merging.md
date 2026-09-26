@@ -115,3 +115,42 @@ the current wording term); a wider window for late attachment (chain is continuo
 - The labels are our reading of the wording, not the organisers' key. Ask the organisers whether one exists.
 - The weights are tuned on one 3-hour recording. Re-run the search on a second recording before trusting them for the
   final run (`tools/label_recording.py` then `tools/eval_recording.py`).
+
+
+---
+
+## Fragment merging and reassignment: evaluated, not shipped
+
+Asked for: merge incidents that share a root cause and are close in time, to raise completeness (0.65). Prototyped
+offline on the labelled recording before touching the live path. It does not help:
+
+| variant | pair F1 | purity | completeness |
+|---|---|---|---|
+| current engine | 0.571 | 0.90 | 0.65 |
+| merge incidents with the same root, gap <= 5 / 10 / 15 min (also with structural link, wording, component) | 0.544 | 0.87 | 0.66 |
+| the same, gap <= 25 min | 0.479 | 0.58 | 0.67 |
+| reassign each signal to the incident it is most similar to (top-3 mean, margin 0) | 0.572 | 0.91 | 0.68 |
+
+Why: the remaining "fragments" are mostly not fragments.
+- Several are **single stray signals** inside the wrong incident: Grafana fires every rule at one instant (10:24, 10:27:56),
+  so an alert of one story is coincident in time and one hop from another story's services. Reassignment moves a few of
+  them (mixed incidents 5 to 3, split stories 7 to 5) but the gain is inside the noise and needs pairwise similarity
+  over every incident in the live path, so it was not adopted.
+- Two stories share a root service but are different problems (rulesforge batch job vs rulesforge slow query), so
+  merging by root wrongly joins them: purity falls.
+- The carrier leak's "three pieces" are two phases 26 minutes apart that the labeller glued together.
+
+**The headline pair F1 depends on that one labelling decision.** Re-scoring the same engine output:
+
+| carrier leak labelled as | true stories | pair F1 | purity | completeness |
+|---|---|---|---|---|
+| one story (gap 25 min, as committed) | 17 | 0.571 | 0.90 | 0.65 |
+| two phases (gap 15 min) | 18 | 0.685 | 0.90 | 0.65 |
+| two phases (gap 10 min) | 19 | 0.705 | 0.90 | 0.62 |
+
+So quote the real-data result as "pair F1 0.57 to 0.70 depending on how one ambiguous story is labelled; purity 0.90 and
+13 of 13 root causes either way". Purity and root cause are the stable numbers. To settle it we need the organisers'
+answer key or a second recording with a different label owner.
+
+Next experiments, if more accuracy is wanted: per-rule metadata for the simultaneous Grafana burst; semantic (embedding)
+similarity for wording across sources; and a second labelled recording to tune on and to hold out.
