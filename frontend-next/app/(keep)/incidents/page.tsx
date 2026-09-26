@@ -1,7 +1,7 @@
 import { IncidentsClient } from "./IncidentsClient";
 
 export const metadata = {
-  title: "Incidents | AlertLens",
+  title: "Incidents | Nexus AIOps",
 };
 
 export default function IncidentsPage() {

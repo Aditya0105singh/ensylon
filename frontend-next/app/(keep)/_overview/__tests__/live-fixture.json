@@ -1,0 +1,1705 @@
+{
+ "/engine/stream/status": {
+  "base_url": "http://127.0.0.1:9100",
+  "tickets_dir": "/home/user/ensylon/output/tickets",
+  "graph_origin": "reference endpoint",
+  "uptime_seconds": 771.8,
+  "tick_seconds": 2.0,
+  "streams": [
+   {
+    "name": "aiops-logs",
+    "source": "application_logs",
+    "connected": true,
+    "last_event_id": "000015",
+    "events": 15,
+    "signals": 15,
+    "skipped": 0,
+    "parse_errors": 0,
+    "keepalives": 52,
+    "reconnects": 0,
+    "last_error": null,
+    "last_heard_seconds_ago": 6.2
+   },
+   {
+    "name": "aiops-cloudwatch",
+    "source": "cloudwatch_metrics",
+    "connected": true,
+    "last_event_id": "000003",
+    "events": 3,
+    "signals": 3,
+    "skipped": 0,
+    "parse_errors": 0,
+    "keepalives": 52,
+    "reconnects": 0,
+    "last_error": null,
+    "last_heard_seconds_ago": 6.2
+   },
+   {
+    "name": "aiops-grafana",
+    "source": "grafana_alerts",
+    "connected": true,
+    "last_event_id": "000003",
+    "events": 3,
+    "signals": 2,
+    "skipped": 1,
+    "parse_errors": 0,
+    "keepalives": 52,
+    "reconnects": 0,
+    "last_error": null,
+    "last_heard_seconds_ago": 6.2
+   }
+  ],
+  "claude": {
+   "enabled": false,
+   "model": "claude-opus-5"
+  },
+  "engine": {
+   "signals_received": 20,
+   "by_source": {
+    "application_logs": 15,
+    "cloudwatch_metrics": 3,
+    "grafana_alerts": 2
+   },
+   "anomalous": 13,
+   "pending": 1,
+   "incidents": 2,
+   "noise": 0,
+   "validation_rejections": 0,
+   "ticks": 385,
+   "stream_clock": "2026-09-26T06:25:27.069331+00:00",
+   "last_signal_seconds_ago": 698.1
+  }
+ },
+ "/engine/queue": [
+  {
+   "draft_id": "draft-0-1790403162",
+   "title": "[DRAFT] agency-db: DBConnectionCount cascading to 2 service(s)",
+   "priority": "P1",
+   "severity_score": 0.868,
+   "correlation_confidence": 1.0,
+   "causal_confidence": 93,
+   "root_cause_service": "agency-db",
+   "affected_services": [
+    "agency-db",
+    "enrollment-service",
+    "payments-service"
+   ],
+   "signal_count": 5,
+   "started_at": "2026-09-26T06:12:42+00:00",
+   "status": "awaiting_review",
+   "jira_key": null,
+   "merged_into": null,
+   "reviewer": null,
+   "suppressed": false,
+   "summary_source": "template"
+  },
+  {
+   "draft_id": "draft-1-1790403194",
+   "title": "[DRAFT] comms-service: smtp_error_rate",
+   "priority": "P2",
+   "severity_score": 0.518,
+   "correlation_confidence": 0.77,
+   "causal_confidence": 46,
+   "root_cause_service": "comms-service",
+   "affected_services": [
+    "comms-service"
+   ],
+   "signal_count": 2,
+   "started_at": "2026-09-26T06:13:14+00:00",
+   "status": "awaiting_review",
+   "jira_key": null,
+   "merged_into": null,
+   "reviewer": null,
+   "suppressed": false,
+   "summary_source": "template"
+  }
+ ],
+ "/engine/stream/signals?limit=14": {
+  "total": 19,
+  "signals": [
+   {
+    "signal_id": "91a23b12-2fe4-47cc-ae32-2b67bfd7ae61",
+    "timestamp": "2026-09-26T06:13:49Z",
+    "source": "application_logs",
+    "environment": "unknown",
+    "region": "unknown",
+    "service": "payments-service",
+    "component": "db-connection-pool",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.6,
+    "evidence": "Connection pool exhausted. Pool size: 100, waiting threads: 44 \u2014 template#18955",
+    "metadata": {
+     "ctx.user": "[REDACTED:EMAIL]",
+     "ctx.ip": "[REDACTED:IPV4]",
+     "ctx.session": "[REDACTED:SESSION]",
+     "ctx.acc": "[REDACTED:ACCOUNT]",
+     "level": "ERROR",
+     "stream_seq": "000015",
+     "is_anomaly": true,
+     "detection_reason": "error-severity log (high)",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": [
+      "EMAIL",
+      "IPV4",
+      "SESSION",
+      "ACCOUNT"
+     ]
+    }
+   },
+   {
+    "signal_id": "4e732ad0-3e33-4b86-ae71-b17664546a6d",
+    "timestamp": "2026-09-26T06:13:24Z",
+    "source": "application_logs",
+    "environment": "prod",
+    "region": "unknown",
+    "service": "party-service",
+    "component": "api-handler",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.0,
+    "evidence": "Request completed in 42ms \u2014 template#68751",
+    "metadata": {
+     "host": "party-prod-01",
+     "level": "INFO",
+     "stream_seq": "000014",
+     "is_anomaly": false,
+     "detection_reason": "",
+     "occurrence_count": 1,
+     "severity": "info",
+     "redacted": []
+    }
+   },
+   {
+    "signal_id": "ad6b4275-91f5-413c-80fe-a6585efa6639",
+    "timestamp": "2026-09-26T06:13:21Z",
+    "source": "application_logs",
+    "environment": "prod",
+    "region": "unknown",
+    "service": "comms-service",
+    "component": "smtp-relay",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.6,
+    "evidence": "SMTP relay refused connection: 421 service not available \u2014 template#46282",
+    "metadata": {
+     "host": "comms-prod-01",
+     "level": "ERROR",
+     "stream_seq": "000013",
+     "is_anomaly": true,
+     "detection_reason": "error-severity log (high)",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": []
+    }
+   },
+   {
+    "signal_id": "0296188e-2c77-40d6-ba85-5e204d6040cf",
+    "timestamp": "2026-09-26T06:13:18Z",
+    "source": "grafana_alerts",
+    "environment": "prod",
+    "region": "ap-south-1",
+    "service": "comms-service",
+    "component": "unknown",
+    "signal_type": "grafana_alert",
+    "anomaly_score": 1.0,
+    "evidence": "smtp_error_rate = 42 vs threshold 5 \u2014 Email Delivery Failures \u2014 comms-service: smtp_error_rate 42 above the 5 threshold for 3 consecutive periods. Last affected user: [REDACTED:EMAIL] (acc: [REDACTED:ACCOUNT], session: [REDACTED:SESSION])",
+    "metadata": {
+     "rule_name": "Email Delivery Failures-comms-service",
+     "title": "Email Delivery Failures \u2014 comms-service",
+     "grafana_state": "alerting",
+     "dashboard_id": "12",
+     "panel_id": "7",
+     "tag.host": "[REDACTED:IPV4]",
+     "stream_seq": "000003",
+     "is_anomaly": true,
+     "detection_reason": "Grafana rule Email Delivery Failures-comms-service alerting; 42 vs threshold 5 (+740% past it)",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": [
+      "EMAIL",
+      "SESSION",
+      "ACCOUNT",
+      "IPV4"
+     ]
+    }
+   },
+   {
+    "signal_id": "aaf5ba1a-e9ad-4bef-87f8-000708c3a9a1",
+    "timestamp": "2026-09-26T06:13:14Z",
+    "source": "application_logs",
+    "environment": "prod",
+    "region": "unknown",
+    "service": "comms-service",
+    "component": "smtp-relay",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.8,
+    "evidence": "SMTP relay refused connection: 421 service not available \u2014 template#46282",
+    "metadata": {
+     "host": "comms-prod-01",
+     "level": "ERROR",
+     "stream_seq": "000012",
+     "is_anomaly": true,
+     "detection_reason": "novel error template T46282 not seen in baseline",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": []
+    }
+   },
+   {
+    "signal_id": "d0f9dd07-7ea8-4e76-904c-d32cd2852673",
+    "timestamp": "2026-09-26T06:13:04Z",
+    "source": "application_logs",
+    "environment": "prod",
+    "region": "unknown",
+    "service": "party-service",
+    "component": "api-handler",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.0,
+    "evidence": "Request completed in 42ms \u2014 template#68751",
+    "metadata": {
+     "host": "party-prod-01",
+     "level": "INFO",
+     "stream_seq": "000011",
+     "is_anomaly": false,
+     "detection_reason": "",
+     "occurrence_count": 1,
+     "severity": "info",
+     "redacted": []
+    }
+   },
+   {
+    "signal_id": "a0410fc8-a244-4491-b8c8-ad3fc1a1599f",
+    "timestamp": "2026-09-26T06:13:02Z",
+    "source": "grafana_alerts",
+    "environment": "prod",
+    "region": "ap-south-1",
+    "service": "enrollment-service",
+    "component": "unknown",
+    "signal_type": "grafana_alert",
+    "anomaly_score": 0.992,
+    "evidence": "response_time_p99 = 4785 vs threshold 4000 \u2014 High Latency \u2014 enrollment-service: response_time_p99 4785 above the 4000 threshold for 3 consecutive periods. Last affected user: [REDACTED:EMAIL] (acc: [REDACTED:ACCOUNT], session: [REDACTED:SESSION])",
+    "metadata": {
+     "rule_name": "High Latency-enrollment-service",
+     "title": "High Latency \u2014 enrollment-service",
+     "grafana_state": "alerting",
+     "dashboard_id": "12",
+     "panel_id": "7",
+     "tag.host": "[REDACTED:IPV4]",
+     "stream_seq": "000002",
+     "is_anomaly": true,
+     "detection_reason": "Grafana rule High Latency-enrollment-service alerting; 4785 vs threshold 4000 (+20% past it)",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": [
+      "EMAIL",
+      "SESSION",
+      "ACCOUNT",
+      "IPV4"
+     ]
+    }
+   },
+   {
+    "signal_id": "75281e19-575c-4a8b-800d-7424bd266f36",
+    "timestamp": "2026-09-26T06:12:58Z",
+    "source": "application_logs",
+    "environment": "prod",
+    "region": "unknown",
+    "service": "enrollment-service",
+    "component": "api-handler",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.8,
+    "evidence": "Circuit breaker OPEN for payments-service after 27 consecutive failures \u2014 template#915",
+    "metadata": {
+     "host": "enrollment-prod-02",
+     "level": "ERROR",
+     "stream_seq": "000010",
+     "mentions": "payments-service",
+     "is_anomaly": true,
+     "detection_reason": "novel error template T915 not seen in baseline",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": []
+    }
+   },
+   {
+    "signal_id": "734baf9b-3495-4e72-b502-81f0d39b5a8b",
+    "timestamp": "2026-09-26T06:12:54Z",
+    "source": "cloudwatch_metrics",
+    "environment": "prod",
+    "region": "ap-south-1",
+    "service": "payments-service",
+    "component": "db-connection-pool",
+    "signal_type": "metric_anomaly",
+    "anomaly_score": 0.711,
+    "evidence": "DBConnectionCount = 95 vs threshold 90 \u2014 DBConnectionCount exceeded threshold - affects [REDACTED:SERVICE_ACCOUNT]",
+    "metadata": {
+     "alarm_name": "HighDBConnections-payments-service",
+     "namespace": "AWS/RDS",
+     "statistic": "AVERAGE",
+     "period_s": "60",
+     "evaluation_periods": "3",
+     "old_state": "OK",
+     "resource.accountId": "[REDACTED:CLOUD_ACCOUNT]",
+     "resource.serviceAccount": "[REDACTED:SERVICE_ACCOUNT]",
+     "stream_seq": "000003",
+     "is_anomaly": true,
+     "detection_reason": "CloudWatch alarm HighDBConnections-payments-service in ALARM state; 95 vs threshold 90 (+6% past it)",
+     "occurrence_count": 1,
+     "severity": "critical",
+     "redacted": [
+      "SERVICE_ACCOUNT",
+      "CLOUD_ACCOUNT"
+     ]
+    }
+   },
+   {
+    "signal_id": "a2d084fe-0d12-4b8d-ac7d-29f4bb4dc80d",
+    "timestamp": "2026-09-26T06:12:52Z",
+    "source": "cloudwatch_metrics",
+    "environment": "prod",
+    "region": "ap-south-1",
+    "service": "batch-report",
+    "component": "renderer",
+    "signal_type": "metric_anomaly",
+    "anomaly_score": 0.929,
+    "evidence": "CPUUtilization = 99 vs threshold 85 \u2014 CPUUtilization exceeded threshold - affects [REDACTED:SERVICE_ACCOUNT]",
+    "metadata": {
+     "alarm_name": "HighCPU-batch-report",
+     "namespace": "AWS/RDS",
+     "statistic": "AVERAGE",
+     "period_s": "60",
+     "evaluation_periods": "3",
+     "old_state": "OK",
+     "resource.accountId": "[REDACTED:CLOUD_ACCOUNT]",
+     "resource.serviceAccount": "[REDACTED:SERVICE_ACCOUNT]",
+     "stream_seq": "000002",
+     "is_anomaly": true,
+     "detection_reason": "CloudWatch alarm HighCPU-batch-report in ALARM state; 99 vs threshold 85 (+16% past it)",
+     "occurrence_count": 1,
+     "severity": "critical",
+     "redacted": [
+      "SERVICE_ACCOUNT",
+      "CLOUD_ACCOUNT"
+     ]
+    }
+   },
+   {
+    "signal_id": "6723003d-2a58-4b5c-be86-33caaf5cbb2a",
+    "timestamp": "2026-09-26T06:12:51Z",
+    "source": "application_logs",
+    "environment": "unknown",
+    "region": "unknown",
+    "service": "payments-service",
+    "component": "db-connection-pool",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.6,
+    "evidence": "Connection pool exhausted. Pool size: 100, waiting threads: 38 \u2014 template#18955",
+    "metadata": {
+     "ctx.user": "[REDACTED:EMAIL]",
+     "ctx.ip": "[REDACTED:IPV4]",
+     "ctx.session": "[REDACTED:SESSION]",
+     "ctx.acc": "[REDACTED:ACCOUNT]",
+     "level": "ERROR",
+     "stream_seq": "000009",
+     "is_anomaly": true,
+     "detection_reason": "error-severity log (high)",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": [
+      "EMAIL",
+      "IPV4",
+      "SESSION",
+      "ACCOUNT"
+     ]
+    }
+   },
+   {
+    "signal_id": "16e674ad-2e8d-4852-9ac5-e94a0af55423",
+    "timestamp": "2026-09-26T06:12:49Z",
+    "source": "application_logs",
+    "environment": "unknown",
+    "region": "unknown",
+    "service": "payments-service",
+    "component": "db-connection-pool",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.6,
+    "evidence": "Connection pool exhausted. Pool size: 100, waiting threads: 31 \u2014 template#18955",
+    "metadata": {
+     "ctx.user": "[REDACTED:EMAIL]",
+     "ctx.ip": "[REDACTED:IPV4]",
+     "ctx.session": "[REDACTED:SESSION]",
+     "ctx.acc": "[REDACTED:ACCOUNT]",
+     "level": "ERROR",
+     "stream_seq": "000008",
+     "is_anomaly": true,
+     "detection_reason": "error-severity log (high)",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": [
+      "EMAIL",
+      "IPV4",
+      "SESSION",
+      "ACCOUNT"
+     ]
+    }
+   },
+   {
+    "signal_id": "0dd37945-2ffb-47d0-932b-47cbd1177b8c",
+    "timestamp": "2026-09-26T06:12:48Z",
+    "source": "application_logs",
+    "environment": "prod",
+    "region": "unknown",
+    "service": "party-service",
+    "component": "api-handler",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.0,
+    "evidence": "Request completed in 42ms \u2014 template#68751",
+    "metadata": {
+     "host": "party-prod-01",
+     "level": "INFO",
+     "stream_seq": "000007",
+     "is_anomaly": false,
+     "detection_reason": "",
+     "occurrence_count": 1,
+     "severity": "info",
+     "redacted": []
+    }
+   },
+   {
+    "signal_id": "a2f0310b-3389-4142-b971-40810dfc9d34",
+    "timestamp": "2026-09-26T06:12:47Z",
+    "source": "application_logs",
+    "environment": "unknown",
+    "region": "unknown",
+    "service": "payments-service",
+    "component": "db-connection-pool",
+    "signal_type": "error_log_burst",
+    "anomaly_score": 0.6,
+    "evidence": "Connection pool exhausted. Pool size: 100, waiting threads: 25 \u2014 template#18955",
+    "metadata": {
+     "ctx.user": "[REDACTED:EMAIL]",
+     "ctx.ip": "[REDACTED:IPV4]",
+     "ctx.session": "[REDACTED:SESSION]",
+     "ctx.acc": "[REDACTED:ACCOUNT]",
+     "level": "ERROR",
+     "stream_seq": "000006",
+     "is_anomaly": true,
+     "detection_reason": "error-severity log (high)",
+     "occurrence_count": 1,
+     "severity": "high",
+     "redacted": [
+      "EMAIL",
+      "IPV4",
+      "SESSION",
+      "ACCOUNT"
+     ]
+    }
+   }
+  ]
+ },
+ "/engine/stream/rejections": [],
+ "/engine/stream/metrics": {
+  "timeline": [
+   {
+    "minute": "2026-09-26T06:12:00+00:00",
+    "application_logs": 10,
+    "cloudwatch_metrics": 3,
+    "anomalous": 8
+   },
+   {
+    "minute": "2026-09-26T06:13:00+00:00",
+    "grafana_alerts": 2,
+    "anomalous": 5,
+    "application_logs": 5
+   }
+  ],
+  "score_histogram": [
+   {
+    "lo": 0.0,
+    "hi": 0.1,
+    "count": 6
+   },
+   {
+    "lo": 0.1,
+    "hi": 0.2,
+    "count": 0
+   },
+   {
+    "lo": 0.2,
+    "hi": 0.3,
+    "count": 0
+   },
+   {
+    "lo": 0.3,
+    "hi": 0.4,
+    "count": 0
+   },
+   {
+    "lo": 0.4,
+    "hi": 0.5,
+    "count": 0
+   },
+   {
+    "lo": 0.5,
+    "hi": 0.6,
+    "count": 0
+   },
+   {
+    "lo": 0.6,
+    "hi": 0.7,
+    "count": 5
+   },
+   {
+    "lo": 0.7,
+    "hi": 0.8,
+    "count": 2
+   },
+   {
+    "lo": 0.8,
+    "hi": 0.9,
+    "count": 3
+   },
+   {
+    "lo": 0.9,
+    "hi": 1.0,
+    "count": 3
+   }
+  ],
+  "dedup": {
+   "received": 20,
+   "distinct": 19,
+   "collapsed": 1,
+   "collapsed_pct": 5.0,
+   "bucket_minutes": 5.0
+  },
+  "top_repeats": [
+   {
+    "service": "agency-db",
+    "component": "db-connection-pool",
+    "source": "cloudwatch_metrics",
+    "evidence": "DBConnectionCount exceeded threshold - affects [REDACTED:SERVICE_ACCOUNT]",
+    "count": 1,
+    "first": "2026-09-26T06:12:42+00:00",
+    "last": "2026-09-26T06:12:42+00:00"
+   },
+   {
+    "service": "payments-service",
+    "component": "db-connection-pool",
+    "source": "application_logs",
+    "evidence": "Connection pool exhausted. Pool size: 100, waiting threads: 22",
+    "count": 1,
+    "first": "2026-09-26T06:12:45+00:00",
+    "last": "2026-09-26T06:12:45+00:00"
+   },
+   {
+    "service": "batch-report",
+    "component": "renderer",
+    "source": "cloudwatch_metrics",
+    "evidence": "CPUUtilization exceeded threshold - affects [REDACTED:SERVICE_ACCOUNT]",
+    "count": 1,
+    "first": "2026-09-26T06:12:52+00:00",
+    "last": "2026-09-26T06:12:52+00:00"
+   },
+   {
+    "service": "comms-service",
+    "component": "smtp-relay",
+    "source": "application_logs",
+    "evidence": "SMTP relay refused connection: 421 service not available",
+    "count": 1,
+    "first": "2026-09-26T06:13:14+00:00",
+    "last": "2026-09-26T06:13:14+00:00"
+   },
+   {
+    "service": "comms-service",
+    "component": null,
+    "source": "grafana_alerts",
+    "evidence": "Email Delivery Failures \u2014 comms-service: smtp_error_rate 42 above the 5 threshold for 3 consecutive periods. Last affect",
+    "count": 1,
+    "first": "2026-09-26T06:13:18.001129+00:00",
+    "last": "2026-09-26T06:13:18.001129+00:00"
+   }
+  ],
+  "priorities": {
+   "P1": 1,
+   "P2": 1
+  }
+ },
+ "/engine/graph": {
+  "nodes": [
+   {
+    "id": "agency-db",
+    "criticality": 80,
+    "incidents": [
+     "draft-0-1790403162"
+    ],
+    "root_cause_of": [
+     "draft-0-1790403162"
+    ]
+   },
+   {
+    "id": "agency-gateway",
+    "criticality": 85,
+    "incidents": [],
+    "root_cause_of": []
+   },
+   {
+    "id": "carrier-service",
+    "criticality": 88,
+    "incidents": [],
+    "root_cause_of": []
+   },
+   {
+    "id": "comms-service",
+    "criticality": 40,
+    "incidents": [
+     "draft-1-1790403194"
+    ],
+    "root_cause_of": [
+     "draft-1-1790403194"
+    ]
+   },
+   {
+    "id": "compensation-service",
+    "criticality": 78,
+    "incidents": [],
+    "root_cause_of": []
+   },
+   {
+    "id": "distribution-service",
+    "criticality": 65,
+    "incidents": [],
+    "root_cause_of": []
+   },
+   {
+    "id": "docforge",
+    "criticality": 30,
+    "incidents": [],
+    "root_cause_of": []
+   },
+   {
+    "id": "enrollment-service",
+    "criticality": 92,
+    "incidents": [
+     "draft-0-1790403162"
+    ],
+    "root_cause_of": []
+   },
+   {
+    "id": "party-service",
+    "criticality": 72,
+    "incidents": [],
+    "root_cause_of": []
+   },
+   {
+    "id": "payments-service",
+    "criticality": 95,
+    "incidents": [
+     "draft-0-1790403162"
+    ],
+    "root_cause_of": []
+   },
+   {
+    "id": "product-service",
+    "criticality": 60,
+    "incidents": [],
+    "root_cause_of": []
+   },
+   {
+    "id": "rulesforge",
+    "criticality": 75,
+    "incidents": [],
+    "root_cause_of": []
+   }
+  ],
+  "edges": [
+   {
+    "caller": "agency-gateway",
+    "callee": "carrier-service"
+   },
+   {
+    "caller": "agency-gateway",
+    "callee": "party-service"
+   },
+   {
+    "caller": "carrier-service",
+    "callee": "agency-db"
+   },
+   {
+    "caller": "carrier-service",
+    "callee": "comms-service"
+   },
+   {
+    "caller": "carrier-service",
+    "callee": "payments-service"
+   },
+   {
+    "caller": "compensation-service",
+    "callee": "agency-db"
+   },
+   {
+    "caller": "compensation-service",
+    "callee": "distribution-service"
+   },
+   {
+    "caller": "compensation-service",
+    "callee": "payments-service"
+   },
+   {
+    "caller": "distribution-service",
+    "callee": "agency-db"
+   },
+   {
+    "caller": "distribution-service",
+    "callee": "party-service"
+   },
+   {
+    "caller": "docforge",
+    "callee": "agency-db"
+   },
+   {
+    "caller": "enrollment-service",
+    "callee": "carrier-service"
+   },
+   {
+    "caller": "enrollment-service",
+    "callee": "party-service"
+   },
+   {
+    "caller": "enrollment-service",
+    "callee": "payments-service"
+   },
+   {
+    "caller": "enrollment-service",
+    "callee": "product-service"
+   },
+   {
+    "caller": "party-service",
+    "callee": "agency-db"
+   },
+   {
+    "caller": "payments-service",
+    "callee": "agency-db"
+   },
+   {
+    "caller": "payments-service",
+    "callee": "rulesforge"
+   },
+   {
+    "caller": "product-service",
+    "callee": "agency-db"
+   },
+   {
+    "caller": "rulesforge",
+    "callee": "agency-db"
+   }
+  ],
+  "origin": "reference endpoint"
+ },
+ "/engine/queue/draft-0-1790403162/evidence": {
+  "draft_id": "draft-0-1790403162",
+  "raw_signals": 9,
+  "unique_signals": 5,
+  "signals": [
+   {
+    "id": "8d0ea0de-c864-4c70-be95-b80f317827a5",
+    "at": "2026-09-26T06:12:42+00:00",
+    "source": "cloudwatch_metric",
+    "service": "agency-db",
+    "message": "DBConnectionCount exceeded threshold - affects [REDACTED:SERVICE_ACCOUNT]",
+    "severity": "critical",
+    "occurrences": 1,
+    "trace_id": null,
+    "template_id": null,
+    "is_root_cause_signal": true,
+    "value": 97.0,
+    "threshold": 90.0,
+    "detection_reason": "CloudWatch alarm HighDBConnections-agency-db in ALARM state; 97 vs threshold 90 (+8% past it)",
+    "join": {
+     "joined": true,
+     "gate": "direct dependency edge",
+     "linked_to": "payments-service",
+     "components": {
+      "time_proximity": 0.95,
+      "service_affinity": 0.0,
+      "dependency_closeness": 0.75,
+      "template_similarity": 1.0,
+      "component_match": 1.0,
+      "total": 0.74
+     }
+    },
+    "badges": [
+     {
+      "label": "Same service",
+      "ok": false
+     },
+     {
+      "label": "Dependency link",
+      "ok": true
+     },
+     {
+      "label": "Shared trace ID",
+      "ok": false
+     },
+     {
+      "label": "Template match",
+      "ok": true
+     },
+     {
+      "label": "Inside window",
+      "ok": true
+     }
+    ]
+   },
+   {
+    "id": "2aec3b66-825c-4f2f-a717-2bd64df58039",
+    "at": "2026-09-26T06:12:45+00:00",
+    "source": "app_log",
+    "service": "payments-service",
+    "message": "Connection pool exhausted. Pool size: 100, waiting threads: 22",
+    "severity": "high",
+    "occurrences": 5,
+    "trace_id": null,
+    "template_id": "T18955",
+    "is_root_cause_signal": false,
+    "value": null,
+    "threshold": null,
+    "detection_reason": "novel error template T18955 not seen in baseline",
+    "join": {
+     "joined": true,
+     "gate": "same service",
+     "linked_to": "payments-service",
+     "components": {
+      "time_proximity": 0.96,
+      "service_affinity": 1.0,
+      "dependency_closeness": 1.0,
+      "template_similarity": 0.18,
+      "component_match": 1.0,
+      "total": 0.83
+     }
+    },
+    "badges": [
+     {
+      "label": "Same service",
+      "ok": true
+     },
+     {
+      "label": "Dependency link",
+      "ok": true
+     },
+     {
+      "label": "Shared trace ID",
+      "ok": false
+     },
+     {
+      "label": "Template match",
+      "ok": false
+     },
+     {
+      "label": "Inside window",
+      "ok": true
+     }
+    ]
+   },
+   {
+    "id": "734baf9b-3495-4e72-b502-81f0d39b5a8b",
+    "at": "2026-09-26T06:12:54+00:00",
+    "source": "cloudwatch_metric",
+    "service": "payments-service",
+    "message": "DBConnectionCount exceeded threshold - affects [REDACTED:SERVICE_ACCOUNT]",
+    "severity": "critical",
+    "occurrences": 1,
+    "trace_id": null,
+    "template_id": null,
+    "is_root_cause_signal": false,
+    "value": 95.0,
+    "threshold": 90.0,
+    "detection_reason": "CloudWatch alarm HighDBConnections-payments-service in ALARM state; 95 vs threshold 90 (+6% past it)",
+    "join": {
+     "joined": true,
+     "gate": "same service",
+     "linked_to": "payments-service",
+     "components": {
+      "time_proximity": 0.96,
+      "service_affinity": 1.0,
+      "dependency_closeness": 1.0,
+      "template_similarity": 0.18,
+      "component_match": 1.0,
+      "total": 0.83
+     }
+    },
+    "badges": [
+     {
+      "label": "Same service",
+      "ok": true
+     },
+     {
+      "label": "Dependency link",
+      "ok": true
+     },
+     {
+      "label": "Shared trace ID",
+      "ok": false
+     },
+     {
+      "label": "Template match",
+      "ok": false
+     },
+     {
+      "label": "Inside window",
+      "ok": true
+     }
+    ]
+   },
+   {
+    "id": "75281e19-575c-4a8b-800d-7424bd266f36",
+    "at": "2026-09-26T06:12:58+00:00",
+    "source": "app_log",
+    "service": "enrollment-service",
+    "message": "Circuit breaker OPEN for payments-service after 27 consecutive failures",
+    "severity": "high",
+    "occurrences": 1,
+    "trace_id": null,
+    "template_id": "T915",
+    "is_root_cause_signal": false,
+    "value": null,
+    "threshold": null,
+    "detection_reason": "novel error template T915 not seen in baseline",
+    "join": {
+     "joined": true,
+     "gate": "same service",
+     "linked_to": "enrollment-service",
+     "components": {
+      "time_proximity": 0.98,
+      "service_affinity": 0.85,
+      "dependency_closeness": 1.0,
+      "template_similarity": 0.08,
+      "component_match": 0.0,
+      "total": 0.63
+     }
+    },
+    "badges": [
+     {
+      "label": "Same service",
+      "ok": true
+     },
+     {
+      "label": "Dependency link",
+      "ok": true
+     },
+     {
+      "label": "Shared trace ID",
+      "ok": false
+     },
+     {
+      "label": "Template match",
+      "ok": false
+     },
+     {
+      "label": "Inside window",
+      "ok": true
+     }
+    ]
+   },
+   {
+    "id": "a0410fc8-a244-4491-b8c8-ad3fc1a1599f",
+    "at": "2026-09-26T06:13:02.001508+00:00",
+    "source": "grafana_alert",
+    "service": "enrollment-service",
+    "message": "High Latency \u2014 enrollment-service: response_time_p99 4785 above the 4000 threshold for 3 consecutive periods. Last affected user: [REDACTED:EMAIL] (acc: [REDACTED:ACCOUNT], session: [REDACTED:SESSION])",
+    "severity": "high",
+    "occurrences": 1,
+    "trace_id": null,
+    "template_id": null,
+    "is_root_cause_signal": false,
+    "value": 4785.0,
+    "threshold": 4000.0,
+    "detection_reason": "Grafana rule High Latency-enrollment-service alerting; 4785 vs threshold 4000 (+20% past it)",
+    "join": {
+     "joined": true,
+     "gate": "same service",
+     "linked_to": "enrollment-service",
+     "components": {
+      "time_proximity": 0.98,
+      "service_affinity": 0.85,
+      "dependency_closeness": 1.0,
+      "template_similarity": 0.08,
+      "component_match": 0.0,
+      "total": 0.63
+     }
+    },
+    "badges": [
+     {
+      "label": "Same service",
+      "ok": true
+     },
+     {
+      "label": "Dependency link",
+      "ok": true
+     },
+     {
+      "label": "Shared trace ID",
+      "ok": false
+     },
+     {
+      "label": "Template match",
+      "ok": false
+     },
+     {
+      "label": "Inside window",
+      "ok": true
+     }
+    ]
+   }
+  ],
+  "excluded": [],
+  "correlation": {
+   "weights": {
+    "time_proximity": 0.25,
+    "service_affinity": 0.2,
+    "dependency_closeness": 0.2,
+    "template_similarity": 0.2,
+    "component_match": 0.15
+   },
+   "confidence": {
+    "parts": [
+     {
+      "label": "Cluster density (100% of pairs directly linked)",
+      "points": 0.4
+     },
+     {
+      "label": "Topology support (100% of pairs within 2 hops)",
+      "points": 0.35
+     },
+     {
+      "label": "Evidence agreement (mean best match 1.00)",
+      "points": 0.25
+     }
+    ],
+    "final": 1.0,
+    "gate_reasons": {
+     "direct dependency edge": 1
+    },
+    "validation": [
+     {
+      "name": "environment consistency",
+      "passed": true,
+      "detail": "single environment (prod)"
+     },
+     {
+      "name": "weak bridge",
+      "passed": true,
+      "detail": "no single-signal bridge"
+     },
+     {
+      "name": "coherence",
+      "passed": true,
+      "detail": "small cluster, 1 direct link(s)"
+     },
+     {
+      "name": "anomaly support",
+      "passed": true,
+      "detail": "strongest anomaly score 0.80 (minimum 0.6)"
+     }
+    ]
+   }
+  },
+  "root_cause": {
+   "service": "agency-db",
+   "confidence": 0.93,
+   "candidates": [
+    {
+     "service": "agency-db",
+     "rank_score": 0.9007,
+     "temporal_precedence": 1.0,
+     "dependency_reach": 1.0,
+     "evidence_strength": 0.67,
+     "is_symptom": false,
+     "symptom_of": [],
+     "survived_counterfactual": true,
+     "uniquely_explains": [
+      "payments-service"
+     ],
+     "rejection_reason": "",
+     "first_seen": "2026-09-26T06:12:42+00:00",
+     "signal_count": 1,
+     "source_kinds": [
+      "metric"
+     ]
+    },
+    {
+     "service": "payments-service",
+     "rank_score": 0.591,
+     "temporal_precedence": 0.5,
+     "dependency_reach": 0.5,
+     "evidence_strength": 0.8,
+     "is_symptom": true,
+     "symptom_of": [
+      "agency-db"
+     ],
+     "survived_counterfactual": false,
+     "uniquely_explains": [],
+     "rejection_reason": "rejected by counterfactual: removing it leaves every affected service still explained by another failing dependency",
+     "first_seen": "2026-09-26T06:12:45+00:00",
+     "signal_count": 2,
+     "source_kinds": [
+      "log",
+      "metric"
+     ]
+    },
+    {
+     "service": "enrollment-service",
+     "rank_score": 0.2391,
+     "temporal_precedence": 0.0,
+     "dependency_reach": 0.0,
+     "evidence_strength": 0.8,
+     "is_symptom": true,
+     "symptom_of": [
+      "payments-service"
+     ],
+     "survived_counterfactual": false,
+     "uniquely_explains": [],
+     "rejection_reason": "rejected by counterfactual: removing it leaves every affected service still explained by another failing dependency",
+     "first_seen": "2026-09-26T06:12:58+00:00",
+     "signal_count": 2,
+     "source_kinds": [
+      "log",
+      "metric"
+     ]
+    }
+   ],
+   "rejected_by_counterfactual": [
+    "enrollment-service",
+    "payments-service"
+   ],
+   "reasoning": [
+    "agency-db ranked highest (0.90) on temporal precedence 100%, dependency reach 100%, evidence 0.67.",
+    "Counterfactual: removing it leaves payments-service unexplained, so it is necessary to account for the observed failures.",
+    "Ruled out as symptoms rather than causes: enrollment-service, payments-service."
+   ]
+  },
+  "severity": {
+   "score": 0.868,
+   "impact": 87,
+   "priority": "P1",
+   "p1_threshold": 0.75,
+   "p2_threshold": 0.5,
+   "p3_threshold": 0.25,
+   "factors": [
+    {
+     "key": "blast_radius",
+     "label": "Blast radius",
+     "weight": 0.4,
+     "value": 0.72,
+     "note": "3 service(s) affected, 8 more downstream of the root cause",
+     "contribution": 0.288
+    },
+    {
+     "key": "business_criticality",
+     "label": "Business criticality",
+     "weight": 0.35,
+     "value": 0.95,
+     "note": "payments-service (criticality 0.95)",
+     "contribution": 0.332
+    },
+    {
+     "key": "anomaly_magnitude",
+     "label": "Anomaly magnitude",
+     "weight": 0.25,
+     "value": 0.992,
+     "note": "enrollment-service: 0.99 (response_time_p99 4785 vs threshold 4000)",
+     "contribution": 0.248
+    },
+    {
+     "key": "trend",
+     "label": "Trend direction (context)",
+     "weight": 0.0,
+     "value": 0.75,
+     "note": "rising (3 signals in 2nd half vs 2 in 1st)",
+     "contribution": 0.0
+    },
+    {
+     "key": "signal_diversity",
+     "label": "Signal diversity (context)",
+     "weight": 0.0,
+     "value": 0.667,
+     "note": "2 source families: log, metric",
+     "contribution": 0.0
+    }
+   ],
+   "suppressed": false,
+   "suppression_reason": "",
+   "flap_count": 1
+  }
+ },
+ "/engine/queue/draft-0-1790403162": {
+  "draft_id": "draft-0-1790403162",
+  "title": "[DRAFT] agency-db: DBConnectionCount cascading to 2 service(s)",
+  "priority": "P1",
+  "severity_score": 0.868,
+  "correlation_confidence": 1.0,
+  "causal_confidence": 93,
+  "root_cause_service": "agency-db",
+  "affected_services": [
+   "agency-db",
+   "enrollment-service",
+   "payments-service"
+  ],
+  "signal_count": 5,
+  "started_at": "2026-09-26T06:12:42+00:00",
+  "status": "awaiting_review",
+  "jira_key": null,
+  "merged_into": null,
+  "reviewer": null,
+  "suppressed": false,
+  "summary_source": "template",
+  "severity_line": "P1 \u2014 impact 87/100 (blast 0.72 \u00b7 criticality 0.95 \u00b7 magnitude 0.99)",
+  "root_cause_detail": "agency-db \u2014 DBConnectionCount = 97 (threshold 90) (first seen 06:12:42)",
+  "summary": "5 correlated signals across 3 service(s), scored P1. Causal analysis points to agency-db, with knock-on failures in enrollment-service, payments-service.",
+  "investigation_steps": [
+   "Inspect agency-db first \u2014 causal analysis identifies it as the origin.",
+   "Check DBConnectionCount on agency-db against its threshold (90).",
+   "Confirm enrollment-service, payments-service recover once agency-db is healthy \u2014 if they do not, there is a second independent fault."
+  ],
+  "causal_reasoning": [
+   "agency-db ranked highest (0.90) on temporal precedence 100%, dependency reach 100%, evidence 0.67.",
+   "Counterfactual: removing it leaves payments-service unexplained, so it is necessary to account for the observed failures.",
+   "Ruled out as symptoms rather than causes: enrollment-service, payments-service."
+  ],
+  "severity_factors": {
+   "blast radius": "3 service(s) affected, 8 more downstream of the root cause",
+   "business criticality": "payments-service (criticality 0.95)",
+   "anomaly magnitude": "enrollment-service: 0.99 (response_time_p99 4785 vs threshold 4000)",
+   "trend": "rising (3 signals in 2nd half vs 2 in 1st)",
+   "signal diversity": "2 source families: log, metric"
+  },
+  "redaction_kinds": [],
+  "timeline": [
+   {
+    "at": "2026-09-26T06:12:42+00:00",
+    "source": "cloudwatch_metrics",
+    "service": "agency-db",
+    "detail": "DBConnectionCount = 97 (threshold 90)",
+    "count": 1
+   },
+   {
+    "at": "2026-09-26T06:12:45+00:00",
+    "source": "application_logs",
+    "service": "payments-service",
+    "detail": "Connection pool exhausted. Pool size: 100, waiting threads: 22",
+    "count": 1
+   },
+   {
+    "at": "2026-09-26T06:12:54+00:00",
+    "source": "cloudwatch_metrics",
+    "service": "payments-service",
+    "detail": "DBConnectionCount = 95 (threshold 90)",
+    "count": 1
+   },
+   {
+    "at": "2026-09-26T06:12:58+00:00",
+    "source": "application_logs",
+    "service": "enrollment-service",
+    "detail": "Circuit breaker OPEN for payments-service after 27 consecutive failures",
+    "count": 1
+   },
+   {
+    "at": "2026-09-26T06:13:02.001508+00:00",
+    "source": "grafana_alerts",
+    "service": "enrollment-service",
+    "detail": "response_time_p99 = 4785 (threshold 4000)",
+    "count": 1
+   }
+  ],
+  "considered_excluded": [],
+  "jira_fields": null,
+  "note": "",
+  "decided_at": null,
+  "historical_match": null,
+  "suppression_reason": "",
+  "lifecycle": "in_review",
+  "history": [
+   {
+    "state": "open",
+    "at": "2026-09-26T06:12:46.300427+00:00",
+    "note": "correlated into an incident"
+   },
+   {
+    "state": "drafting",
+    "at": "2026-09-26T06:12:46.300439+00:00",
+    "note": "ticket assembled from computed evidence"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:12:46.300443+00:00",
+    "note": "waiting for a human decision"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:12:48.302042+00:00",
+    "note": "late signal attached: payments-service: another occurrence of an existing signal (x2) (joined via direct dependency edge)"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:12:50.303423+00:00",
+    "note": "late signal attached: payments-service: another occurrence of an existing signal (x3) (joined via direct dependency edge)"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:12:52.304818+00:00",
+    "note": "late signal attached: payments-service: another occurrence of an existing signal (x4) (joined via direct dependency edge)"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:12:56.307182+00:00",
+    "note": "late signal attached: payments-service: DBConnectionCount (joined via direct dependency edge)"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:13:00.309071+00:00",
+    "note": "late signal attached: enrollment-service: Circuit breaker OPEN for payments-service after 27 consecuti (joined via direct dependency edge)"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:13:04.311155+00:00",
+    "note": "late signal attached: enrollment-service: response_time_p99 (joined via direct dependency edge)"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:13:50.343853+00:00",
+    "note": "late signal attached: payments-service: another occurrence of an existing signal (x5) (joined via direct dependency edge)"
+   }
+  ],
+  "jira_comments": [],
+  "updates": 7
+ },
+ "/engine/queue/draft-1-1790403194/evidence": {
+  "draft_id": "draft-1-1790403194",
+  "raw_signals": 3,
+  "unique_signals": 2,
+  "signals": [
+   {
+    "id": "aaf5ba1a-e9ad-4bef-87f8-000708c3a9a1",
+    "at": "2026-09-26T06:13:14+00:00",
+    "source": "app_log",
+    "service": "comms-service",
+    "message": "SMTP relay refused connection: 421 service not available",
+    "severity": "high",
+    "occurrences": 2,
+    "trace_id": null,
+    "template_id": "T46282",
+    "is_root_cause_signal": false,
+    "value": null,
+    "threshold": null,
+    "detection_reason": "novel error template T46282 not seen in baseline",
+    "join": {
+     "joined": true,
+     "gate": "same service",
+     "linked_to": "comms-service",
+     "components": {
+      "time_proximity": 0.98,
+      "service_affinity": 0.85,
+      "dependency_closeness": 1.0,
+      "template_similarity": 0.1,
+      "component_match": 0.0,
+      "total": 0.63
+     }
+    },
+    "badges": [
+     {
+      "label": "Same service",
+      "ok": true
+     },
+     {
+      "label": "Dependency link",
+      "ok": true
+     },
+     {
+      "label": "Shared trace ID",
+      "ok": false
+     },
+     {
+      "label": "Template match",
+      "ok": false
+     },
+     {
+      "label": "Inside window",
+      "ok": true
+     }
+    ]
+   },
+   {
+    "id": "0296188e-2c77-40d6-ba85-5e204d6040cf",
+    "at": "2026-09-26T06:13:18.001129+00:00",
+    "source": "grafana_alert",
+    "service": "comms-service",
+    "message": "Email Delivery Failures \u2014 comms-service: smtp_error_rate 42 above the 5 threshold for 3 consecutive periods. Last affected user: [REDACTED:EMAIL] (acc: [REDACTED:ACCOUNT], session: [REDACTED:SESSION])",
+    "severity": "high",
+    "occurrences": 1,
+    "trace_id": null,
+    "template_id": null,
+    "is_root_cause_signal": true,
+    "value": 42.0,
+    "threshold": 5.0,
+    "detection_reason": "Grafana rule Email Delivery Failures-comms-service alerting; 42 vs threshold 5 (+740% past it)",
+    "join": {
+     "joined": true,
+     "gate": "same service",
+     "linked_to": "comms-service",
+     "components": {
+      "time_proximity": 0.98,
+      "service_affinity": 0.85,
+      "dependency_closeness": 1.0,
+      "template_similarity": 0.1,
+      "component_match": 0.0,
+      "total": 0.63
+     }
+    },
+    "badges": [
+     {
+      "label": "Same service",
+      "ok": true
+     },
+     {
+      "label": "Dependency link",
+      "ok": true
+     },
+     {
+      "label": "Shared trace ID",
+      "ok": false
+     },
+     {
+      "label": "Template match",
+      "ok": false
+     },
+     {
+      "label": "Inside window",
+      "ok": true
+     }
+    ]
+   }
+  ],
+  "excluded": [],
+  "correlation": {
+   "weights": {
+    "time_proximity": 0.25,
+    "service_affinity": 0.2,
+    "dependency_closeness": 0.2,
+    "template_similarity": 0.2,
+    "component_match": 0.15
+   },
+   "confidence": {
+    "parts": [
+     {
+      "label": "Cluster density (100% of pairs directly linked)",
+      "points": 0.4
+     },
+     {
+      "label": "Topology support (100% of pairs within 2 hops)",
+      "points": 0.35
+     },
+     {
+      "label": "Evidence agreement (mean best match 0.10)",
+      "points": 0.02
+     }
+    ],
+    "final": 0.77,
+    "gate_reasons": {
+     "same service": 1
+    },
+    "validation": [
+     {
+      "name": "environment consistency",
+      "passed": true,
+      "detail": "single environment (prod)"
+     },
+     {
+      "name": "weak bridge",
+      "passed": true,
+      "detail": "no single-signal bridge"
+     },
+     {
+      "name": "coherence",
+      "passed": true,
+      "detail": "small cluster, 1 direct link(s)"
+     },
+     {
+      "name": "anomaly support",
+      "passed": true,
+      "detail": "strongest anomaly score 1.00 (minimum 0.6)"
+     }
+    ]
+   }
+  },
+  "root_cause": {
+   "service": "comms-service",
+   "confidence": 0.46,
+   "candidates": [
+    {
+     "service": "comms-service",
+     "rank_score": 0.94,
+     "temporal_precedence": 1.0,
+     "dependency_reach": 1.0,
+     "evidence_strength": 0.8,
+     "is_symptom": false,
+     "symptom_of": [],
+     "survived_counterfactual": false,
+     "uniquely_explains": [],
+     "rejection_reason": "rejected by counterfactual: removing it leaves every affected service still explained by another failing dependency",
+     "first_seen": "2026-09-26T06:13:14+00:00",
+     "signal_count": 2,
+     "source_kinds": [
+      "log",
+      "metric"
+     ]
+    }
+   ],
+   "rejected_by_counterfactual": [
+    "comms-service"
+   ],
+   "reasoning": [
+    "comms-service ranked highest (0.94) on temporal precedence 100%, dependency reach 100%, evidence 0.80.",
+    "No candidate survived the counterfactual cleanly \u2014 the dependency graph lacks the edges needed to arbitrate, so this ranking is advisory.",
+    "Ruled out as symptoms rather than causes: comms-service."
+   ]
+  },
+  "severity": {
+   "score": 0.518,
+   "impact": 52,
+   "priority": "P2",
+   "p1_threshold": 0.75,
+   "p2_threshold": 0.5,
+   "p3_threshold": 0.25,
+   "factors": [
+    {
+     "key": "blast_radius",
+     "label": "Blast radius",
+     "weight": 0.4,
+     "value": 0.32,
+     "note": "1 service(s) affected, 3 more downstream of the root cause",
+     "contribution": 0.128
+    },
+    {
+     "key": "business_criticality",
+     "label": "Business criticality",
+     "weight": 0.35,
+     "value": 0.4,
+     "note": "comms-service (criticality 0.40)",
+     "contribution": 0.14
+    },
+    {
+     "key": "anomaly_magnitude",
+     "label": "Anomaly magnitude",
+     "weight": 0.25,
+     "value": 1.0,
+     "note": "comms-service: 1.00 (smtp_error_rate 42 vs threshold 5)",
+     "contribution": 0.25
+    },
+    {
+     "key": "trend",
+     "label": "Trend direction (context)",
+     "weight": 0.0,
+     "value": 0.5,
+     "note": "too few signals to establish a trend",
+     "contribution": 0.0
+    },
+    {
+     "key": "signal_diversity",
+     "label": "Signal diversity (context)",
+     "weight": 0.0,
+     "value": 0.667,
+     "note": "2 source families: log, metric",
+     "contribution": 0.0
+    }
+   ],
+   "suppressed": false,
+   "suppression_reason": "",
+   "flap_count": 1
+  }
+ },
+ "/engine/queue/draft-1-1790403194": {
+  "draft_id": "draft-1-1790403194",
+  "title": "[DRAFT] comms-service: smtp_error_rate",
+  "priority": "P2",
+  "severity_score": 0.518,
+  "correlation_confidence": 0.77,
+  "causal_confidence": 46,
+  "root_cause_service": "comms-service",
+  "affected_services": [
+   "comms-service"
+  ],
+  "signal_count": 2,
+  "started_at": "2026-09-26T06:13:14+00:00",
+  "status": "awaiting_review",
+  "jira_key": null,
+  "merged_into": null,
+  "reviewer": null,
+  "suppressed": false,
+  "summary_source": "template",
+  "severity_line": "P2 \u2014 impact 52/100 (blast 0.32 \u00b7 criticality 0.40 \u00b7 magnitude 1.00)",
+  "root_cause_detail": "comms-service \u2014 smtp_error_rate = 42 (threshold 5) (first seen 06:13:18)",
+  "summary": "2 correlated signals across 1 service(s), scored P2. Causal analysis points to comms-service.",
+  "investigation_steps": [
+   "Inspect comms-service first \u2014 causal analysis identifies it as the origin.",
+   "Check smtp_error_rate on comms-service against its threshold (5)."
+  ],
+  "causal_reasoning": [
+   "comms-service ranked highest (0.94) on temporal precedence 100%, dependency reach 100%, evidence 0.80.",
+   "No candidate survived the counterfactual cleanly \u2014 the dependency graph lacks the edges needed to arbitrate, so this ranking is advisory.",
+   "Ruled out as symptoms rather than causes: comms-service."
+  ],
+  "severity_factors": {
+   "blast radius": "1 service(s) affected, 3 more downstream of the root cause",
+   "business criticality": "comms-service (criticality 0.40)",
+   "anomaly magnitude": "comms-service: 1.00 (smtp_error_rate 42 vs threshold 5)",
+   "trend": "too few signals to establish a trend",
+   "signal diversity": "2 source families: log, metric"
+  },
+  "redaction_kinds": [],
+  "timeline": [
+   {
+    "at": "2026-09-26T06:13:14+00:00",
+    "source": "application_logs",
+    "service": "comms-service",
+    "detail": "SMTP relay refused connection: 421 service not available",
+    "count": 1
+   },
+   {
+    "at": "2026-09-26T06:13:18.001129+00:00",
+    "source": "grafana_alerts",
+    "service": "comms-service",
+    "detail": "smtp_error_rate = 42 (threshold 5)",
+    "count": 1
+   }
+  ],
+  "considered_excluded": [],
+  "jira_fields": null,
+  "note": "",
+  "decided_at": null,
+  "historical_match": null,
+  "suppression_reason": "",
+  "lifecycle": "in_review",
+  "history": [
+   {
+    "state": "open",
+    "at": "2026-09-26T06:13:20.323538+00:00",
+    "note": "correlated into an incident"
+   },
+   {
+    "state": "drafting",
+    "at": "2026-09-26T06:13:20.323548+00:00",
+    "note": "ticket assembled from computed evidence"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:13:20.323551+00:00",
+    "note": "waiting for a human decision"
+   },
+   {
+    "state": "in_review",
+    "at": "2026-09-26T06:13:22.325852+00:00",
+    "note": "late signal attached: comms-service: another occurrence of an existing signal (x2) (joined via same service)"
+   }
+  ],
+  "jira_comments": [],
+  "updates": 1
+ }
+}

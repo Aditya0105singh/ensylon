@@ -1,7 +1,7 @@
 import { EvaluationClient } from "./EvaluationClient";
 
 export const metadata = {
-  title: "Evaluation | AlertLens",
+  title: "Evaluation | Nexus AIOps",
 };
 
 export default function EvaluationPage() {

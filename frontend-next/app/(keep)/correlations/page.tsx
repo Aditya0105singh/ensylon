@@ -1,7 +1,7 @@
 import { CorrelationsClient } from "./CorrelationsClient";
 
 export const metadata = {
-  title: "Correlations | AlertLens",
+  title: "Correlations | Nexus AIOps",
 };
 
 export default function CorrelationsPage() {

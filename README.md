@@ -53,7 +53,7 @@ Open http://localhost:3002.
 
 | Page | What it shows |
 |---|---|
-| Overview | Connection state of each stream: Last-Event-ID, keepalives, reconnects. Engine counters, incidents, latest signals, validation rejections. |
+| Overview | The raw signals → anomalies → incidents funnel and alert compression; the top incident in focus with its probable origin, propagation path on the dependency graph, formation timeline, per-dimension correlation breakdown, validation checks and decision trail; a classified live signal feed; stream health (Last-Event-ID, keepalives, reconnects) and validation rejections. |
 | Signal Feed | Every signal in the canonical schema, already redacted. |
 | Incidents & Review | The review queue. Each incident's page shows the evidence, root-cause candidates, severity and confidence breakdowns, and the ticket with **Approve / Edit & approve / Reject**. |
 | Correlation & Validation | The exact formula, weights, gate, validation checks and scoring models, plus live rejections. |

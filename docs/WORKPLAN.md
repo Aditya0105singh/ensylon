@@ -17,18 +17,18 @@ live or recorded demo. So we win on three things, in this order:
 
 ## 0. Team and ownership
 
-Five workstreams. If you are fewer people, merge as marked. Put names in the Owner column (edit this file).
+**Three people.** The six workstreams below (A-F) are folded into three roles. Page-level ownership is in `docs/PAGES.md`.
 
-| ID | Workstream | Skills needed | Owner | If short-staffed, merge with |
-|---|---|---|---|---|
-| **A** | Ingest, streaming, redaction (C1) | Python, networking, regex/NLP, testing | _name_ | — |
-| **B** | Detection, correlation, validation, scoring (C2–C4) | Python, stats/ML, data analysis | _name_ | C |
-| **C** | Ticketing and Claude drafting (C5) + review flow backend | Python, LLM prompting, evals | _name_ | B |
-| **D** | Frontend product and design | React/Next.js, design sense, SVG/charts | _name_ | E |
-| **E** | Frontend interaction, demo, a11y + QA | React, testing, accessibility | _name_ | D |
-| **F** | Docs, deck, demo script, CI, release | Writing, slides, git | _name_ (or Aditya) | A |
+| Role | Person | Workstreams | Focus |
+|---|---|---|---|
+| **Lead / Product** | Aditya | D, E (+ integrator, deck story) | Design system, shell, Overview, Incident detail, Review, Time Machine; owns `main`, contracts, Claude key |
+| **Pipeline** | Friend 1 | A, C | Ingest + redaction + resilience, recorder/replay, Claude drafting, ticket files, audit; Signal Feed, Tickets, Settings |
+| **Intelligence** | Friend 2 | B, F (CI/docs) | Detection/correlation/validation/scoring, benchmark + ablation + calibration; Correlation, Evaluation, Deduplication, Topology; CI, README |
 
-Aditya is the integrator: reviews every PR, owns `main`, owns the deck story, holds the Claude key.
+_Fill in names:_ Lead = Aditya · Pipeline = ______ · Intelligence = ______
+
+Everything below still lists tasks by workstream letter; read "A, C" as Pipeline, "B, F" as Intelligence, "D, E" as Lead.
+The deck slides are shared: each slide's owner is the person whose workstream it covers, Aditya assembles.
 
 **Working rules** (also in `PLAN.md` §6): branch per task `ws-<letter>/<topic>`, PR into `main`, one reviewer, `pytest`
 and `tsc` green, never commit `.env`/keys/`output/`, no synthetic data on the runtime path, no push to the

@@ -5,6 +5,6 @@ export default function Page() {
 }
 
 export const metadata = {
-  title: "Settings | AlertLens",
+  title: "Settings | Nexus AIOps",
   description: "Real system status - what's actually running, not a settings form.",
 };

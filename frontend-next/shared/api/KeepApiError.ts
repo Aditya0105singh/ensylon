@@ -40,7 +40,7 @@ export class KeepApiReadOnlyError extends KeepApiError {
 export class KeepApiHealthError extends KeepApiError {
   constructor(message: string = "API server is not available") {
     const proposedResolution =
-      "Check if the AlertLens backend is running and API_URL is correct.";
+      "Check if the Nexus AIOps backend is running and API_URL is correct.";
     super(message, "", proposedResolution, {}, 503);
     this.name = "KeepApiHealthError";
     this.message = message;

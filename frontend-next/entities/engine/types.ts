@@ -246,6 +246,7 @@ export interface Evidence {
       parts: { label: string; points: number }[];
       final: number;
       gate_reasons: Record<string, number>;
+      validation?: { name: string; passed: boolean; detail: string }[];
     };
   };
   root_cause: {

@@ -2,14 +2,14 @@ import { Card, Text } from "@tremor/react";
 import { AlertLensMark } from "@/components/AlertLensMark";
 
 export const metadata = {
-  title: "AlertLens",
+  title: "Nexus AIOps",
   description:
     "Alert correlation, deduplication and AI-driven incident analysis.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "AlertLens",
+    title: "Nexus AIOps",
   },
   icons: {
     apple: "/icons-pwa/icon-192.png",
@@ -36,7 +36,7 @@ export default function RootLayout({
             <div className="flex items-center gap-3">
               <AlertLensMark className="w-12 h-12" />
               <Text className="text-tremor-title font-bold text-tremor-content-strong">
-                AlertLens
+                Nexus AIOps
               </Text>
             </div>
             <Card

@@ -84,7 +84,7 @@ export const KeepLogoError = ({
               <div>
                 <Image
                   src="/keep.svg"
-                  alt="AlertLens Logo"
+                  alt="Nexus AIOps logo"
                   width={width}
                   height={height}
                   className="w-full h-full"
@@ -99,7 +99,7 @@ export const KeepLogoError = ({
               <div>
                 <Image
                   src="/keep.svg"
-                  alt="AlertLens Logo"
+                  alt="Nexus AIOps logo"
                   width={width}
                   height={height}
                   className="w-full h-full"
@@ -114,7 +114,7 @@ export const KeepLogoError = ({
               <div>
                 <Image
                   src="/keep.svg"
-                  alt="AlertLens Logo"
+                  alt="Nexus AIOps logo"
                   width={width}
                   height={height}
                   className="w-full h-full"

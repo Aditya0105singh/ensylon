@@ -45,7 +45,7 @@ type NavSection = {
 // Header-less group at the top: Overview + the live signal feed.
 const TOP_LINKS: NavLink[] = [
   { href: "/", label: "Overview", icon: AiOutlineHome, testId: "home", isExact: true },
-  { href: "/feed", label: "Signal Feed", icon: AiOutlineAlert, testId: "feed" },
+  { href: "/feed", label: "Live Signals", icon: AiOutlineAlert, testId: "feed" },
 ];
 
 // Every page here reads the live engine (/engine/*). Surfaces that relied on
@@ -53,24 +53,24 @@ const TOP_LINKS: NavLink[] = [
 // Nexus streams are the only input.
 const SECTIONS: NavSection[] = [
   {
-    title: "INCIDENTS",
+    title: "INCIDENT INTELLIGENCE",
     links: [
       { href: "/review", label: "Incidents & Review", icon: HiOutlineShieldCheck, testId: "review" },
-      { href: "/timemachine", label: "Time Machine", icon: TbTimeline, testId: "timemachine" },
-    ],
-  },
-  {
-    title: "INTELLIGENCE",
-    links: [
-      { href: "/deduplication", label: "Deduplication", icon: IoMdGitMerge, testId: "deduplication" },
       { href: "/correlations", label: "Correlation & Validation", icon: TbChartDots3, testId: "correlations" },
       { href: "/topology", label: "Service Topology", icon: TbTopologyRing, testId: "topology" },
     ],
   },
   {
-    title: "INSIGHTS",
+    title: "ANALYSIS",
     links: [
+      { href: "/timemachine", label: "Time Machine", icon: TbTimeline, testId: "timemachine" },
+      { href: "/deduplication", label: "Deduplication", icon: IoMdGitMerge, testId: "deduplication" },
       { href: "/evaluation", label: "Evaluation", icon: LuBrainCircuit, testId: "evaluation" },
+    ],
+  },
+  {
+    title: "SYSTEM",
+    links: [
       { href: "/settings", label: "Settings", icon: HiOutlineCog6Tooth, testId: "settings" },
     ],
   },

@@ -6,5 +6,5 @@ export default async function Page(props: { params: Promise<{ id: string }> }) {
 }
 
 export const metadata = {
-  title: "Incident investigation | AlertLens",
+  title: "Incident investigation | Nexus AIOps",
 };

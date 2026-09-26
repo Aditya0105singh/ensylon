@@ -5,6 +5,6 @@ export default function Page() {
 }
 
 export const metadata = {
-  title: "Maintenance | AlertLens",
+  title: "Maintenance | Nexus AIOps",
   description: "Real time windows that suppress a service's alerts on a schedule.",
 };

@@ -513,11 +513,9 @@
           </table>
         </div>
         <ul class="plain">
-          <li>The streams never go quiet: normal INFO and WARN traffic from all twelve services flows all the time, and the incident scenarios are mixed into it while they play. Background traffic never forms an incident, so any signal that is not part of a scenario is noise your system must not raise.</li>
           <li>The simulator injects realistic, synthetic PII into the fields described in <a href="#sources">Section 3</a>. None of it is real customer data, but your pipeline must treat it as if it were.</li>
-          <li>A new connection first receives the last 200 signals, then live ones. Add <code>?replay=N</code> (0–5000) to change that, or <code>?since=2026-09-26T09:00:00Z</code> to replay everything since a point in time (up to 24 hours back).</li>
           <li>Every event has a sequence id. If your connection drops, reconnect with the <code>Last-Event-ID</code> header (standard SSE clients do this automatically) and the stream resumes from the next signal, so none are lost.</li>
-          <li>Each stream sends a keep-alive comment (<code>:keepalive</code>) every 15 seconds. Incident signals arrive in bursts; your system must handle both bursts and long stretches of routine traffic gracefully.</li>
+          <li>The stream sends a keep-alive comment (<code>:keepalive</code>) every 15 seconds. Signals arrive in bursts, and there will be stretches with no signals at all — your system must handle silence gracefully, without crashing or raising incidents from it.</li>
         </ul>
         <div class="code">
           <div class="code-head"><span>connecting · SSE wire format</span></div>
@@ -528,68 +526,7 @@ id: 000042
 event: signal
 data: &lt;payload — plain text on aiops-logs, a JSON string on aiops-grafana and aiops-cloudwatch&gt;</pre>
         </div>
-
-        <h3>5.1 Public APIs</h3>
-        <p>Everything below is open — no authentication. These are the only endpoints you may use.</p>
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Endpoint</th><th>What it returns</th><th><span class="sr-only">Copy</span></th></tr></thead>
-            <tbody>
-              <tr>
-                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-logs</td>
-                <td>Live stream · application logs (SSE)</td>
-                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-logs">Copy</button></td>
-              </tr>
-              <tr>
-                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-grafana</td>
-                <td>Live stream · Grafana alerts (SSE)</td>
-                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-grafana">Copy</button></td>
-              </tr>
-              <tr>
-                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-cloudwatch</td>
-                <td>Live stream · CloudWatch alarms (SSE)</td>
-                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/stream/aiops-cloudwatch">Copy</button></td>
-              </tr>
-              <tr>
-                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/stream</td>
-                <td>Channel list · each stream’s URL, subscriber count and last sequence id (JSON)</td>
-                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/stream">Copy</button></td>
-              </tr>
-              <tr>
-                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/history/{stream}</td>
-                <td>History · past signals of a stream as JSON (last 24 hours); also <code>aiops-grafana</code>, <code>aiops-cloudwatch</code></td>
-                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/history/aiops-logs">Copy</button></td>
-              </tr>
-              <tr>
-                <td class="url">https://logs.nonprod.nexus.ensylon.com/sim/reference/service-dependency-graph</td>
-                <td>Service dependency graph (JSON) — see <a href="#reference">Section 6.1</a></td>
-                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/sim/reference/service-dependency-graph">Copy</button></td>
-              </tr>
-              <tr>
-                <td class="url">https://logs.nonprod.nexus.ensylon.com/q/swagger-ui/</td>
-                <td>Swagger UI · try the endpoints above in a browser</td>
-                <td><button class="copy" type="button" data-copy="https://logs.nonprod.nexus.ensylon.com/q/swagger-ui/">Copy</button></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <p>History takes <code>from</code> and <code>to</code> (ISO-8601 UTC, both optional), <code>level</code> (<code>DEBUG</code>, <code>INFO</code>, <code>WARN</code>, <code>ERROR</code>) and <code>limit</code> (1–5000, default 1000). Each line’s <code>text</code> is the signal payload exactly as the stream sent it. When <code>truncated</code> is <code>true</code>, call again with <code>afterSeq</code> set to the returned <code>nextAfterSeq</code> for the next page. History is held in memory, so a simulator restart clears it.</p>
-        <div class="code">
-          <div class="code-head"><span>history · JSON</span></div>
-<pre>curl https://logs.nonprod.nexus.ensylon.com/sim/history/aiops-logs?from=2026-09-26T09:00:00Z&amp;level=WARN
-
-{
-  <span class="k">"channel"</span>:      "aiops-logs",
-  <span class="k">"lines"</span>: [
-    { <span class="k">"seq"</span>: 1042, <span class="k">"time"</span>: "2026-09-26T09:00:03.114Z", <span class="k">"level"</span>: "WARN",
-      <span class="k">"text"</span>: "2026-09-26T09:00:03Z WARN payments-service ..." }
-  ],
-  <span class="k">"count"</span>:        1,
-  <span class="k">"truncated"</span>:    false,
-  <span class="k">"nextAfterSeq"</span>: 1042
-}</pre>
-        </div>
-        <p>You may not use the simulator’s internals, its configuration or any endpoint on its host other than those listed above.</p>
+        <p>Your system must handle signals as they arrive — you may not use the simulator’s internals, its configuration or any other endpoint on its host. Treat the three streams as your only input.</p>
       </section>
 
       <section id="reference">
@@ -731,7 +668,6 @@ data: &lt;payload — plain text on aiops-logs, a JSON string on aiops-grafana a
     });
   });
 </script>
-
 
 </body>
 </html>

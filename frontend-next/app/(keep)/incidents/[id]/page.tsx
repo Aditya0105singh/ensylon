@@ -1,7 +1,7 @@
 import { IncidentDetailClient } from "./IncidentDetailClient";
 
 export const metadata = {
-  title: "Incident | AlertLens",
+  title: "Incident | Nexus AIOps",
 };
 
 export default async function IncidentDetailPage(props: {

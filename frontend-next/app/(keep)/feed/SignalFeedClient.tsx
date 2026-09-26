@@ -6,7 +6,7 @@ import { HiOutlineQueueList } from "react-icons/hi2";
 import { KeepLoader, PageHero } from "@/shared/ui";
 import { useStreamSignals } from "@/entities/engine/useEngine";
 import type { CanonicalSignal } from "@/entities/engine/types";
-import { clockUTC } from "../LiveOverviewClient";
+import { clockUTC } from "../_overview/lib";
 
 const SOURCES = [
   { key: null, label: "All streams" },

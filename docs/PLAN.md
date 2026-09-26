@@ -1,6 +1,6 @@
 # Team SpaceX — plan and hand-off
 
-See `docs/WORKPLAN.md` for the detailed task list and owners.
+Start with `docs/TASKS.md` (numbered tasks and API contracts). See `docs/WORKPLAN.md` for the task list by workstream and `docs/PAGES.md` for the page-by-page build spec (3 people).
 
 Read this first if you are picking the work up (a teammate, or a fresh Claude session).
 It says what the challenge needs, what is done, what is left, and how to run and check everything.

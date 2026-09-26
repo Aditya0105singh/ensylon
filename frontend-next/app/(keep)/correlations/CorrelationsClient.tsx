@@ -4,7 +4,7 @@ import { TbChartDots3 } from "react-icons/tb";
 import { HiOutlineExclamationTriangle } from "react-icons/hi2";
 import { PageHero } from "@/shared/ui";
 import { useValidationRejections } from "@/entities/engine/useEngine";
-import { clockUTC } from "../LiveOverviewClient";
+import { clockUTC } from "../_overview/lib";
 
 // Mirrors backend/app/engine/correlate.py, validate.py and severity.py. If a
 // constant changes there, change it here: this page is the written spec.
