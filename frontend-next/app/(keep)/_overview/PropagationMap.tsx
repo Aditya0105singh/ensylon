@@ -5,15 +5,15 @@ import type { ServiceGraph } from "@/entities/engine/types";
 import { PRIORITY_COLOR } from "@/entities/engine/charts";
 import type { PropagationStep } from "./lib";
 
-const COL_W = 168;
-const ROW_H = 46;
-const NODE_W = 138;
-const NODE_H = 28;
+export const COL_W = 168;
+export const ROW_H = 46;
+export const NODE_W = 138;
+export const NODE_H = 28;
 const PAD = 16;
 
 /** Callers on the left, the shared database on the right: each service sits
  * one column right of its deepest caller. */
-function layout(graph: ServiceGraph) {
+export function layout(graph: ServiceGraph) {
   const ids = graph.nodes.map((n) => n.id);
   const callers = new Map<string, string[]>(ids.map((id) => [id, []]));
   graph.edges.forEach((e) => callers.get(e.callee)?.push(e.caller));
@@ -45,7 +45,7 @@ function layout(graph: ServiceGraph) {
 
 /** Orthogonal routing through the gaps between columns and rows, so an edge
  * that skips a column never runs underneath another service's box. */
-function route(a: { x: number; y: number }, b: { x: number; y: number }) {
+export function route(a: { x: number; y: number }, b: { x: number; y: number }) {
   const gap = (COL_W - NODE_W) / 2;
   const rowGap = (ROW_H - NODE_H) / 2;
   const x1 = a.x + NODE_W, y1 = a.y + NODE_H / 2, x2 = b.x, y2 = b.y + NODE_H / 2;
