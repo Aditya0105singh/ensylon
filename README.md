@@ -81,6 +81,28 @@ The suite runs in offline mode (`AIOPS_OFFLINE_DEMO=1`, `NEXUS_LIVE=0`, `CLAUDE_
 | `STREAM_TICK_SECONDS` | `2` | Micro-batch interval. |
 | `TICKETS_DIR` | `output/tickets` | Where approved tickets are written. |
 | `AIOPS_OFFLINE_DEMO` | `0` | Mounts the generated-scenario routes, for tests only. **Keep it off for the evaluated run.** |
+| `NEXUS_RECORD` | `1` | Record every handled event, already redacted, to `recordings/` (gitignored). |
+| `NEXUS_RESUME` | `1` | After a restart, rebuild state from this session's recording and resume each stream from its Last-Event-ID. |
+| `NEXUS_REPLAY` | unset | Play a recording instead of connecting: a path, or `latest`. The UI shows a REPLAY banner. |
+| `REPLAY_SPEED` / `REPLAY_FROM` | `1` / `busiest` | Playback speed, and where to start: `busiest` (just before the most errors and alarms), `start`, or an ISO time. |
+
+### Recording, resume and replay
+
+The live run keeps a recording of what the streams sent, as JSON lines in `recordings/session-*.jsonl`.
+
+- **What is stored:** the stream, the SSE id, and the parsed signal. Parsers redact PII before a signal exists,
+  so nothing un-redacted reaches disk (the brief: redaction "before any further processing or storage").
+  Recoveries and unparsable events are stored by id only.
+- **Resume.** Restart the backend and it rebuilds its incidents from the recording, then reconnects each stream
+  with its recorded `Last-Event-ID`: nothing lost, nothing counted twice. An incident on screen survives a restart.
+- **Replay.** For a demo while the simulator is quiet:
+
+  ```bash
+  NEXUS_REPLAY=latest REPLAY_SPEED=4 python -m uvicorn app.main:app --port 8002
+  ```
+
+  The recording plays through the same engine. Every page shows **REPLAY · not live**, and the top bar says
+  so instead of "Streams live". It is what the streams sent earlier, never generated data.
 
 ---
 
@@ -116,7 +138,8 @@ The suite runs in offline mode (`AIOPS_OFFLINE_DEMO=1`, `NEXUS_LIVE=0`, `CLAUDE_
   raised further by an EWMA z-score when the metric has a baseline.
 - **Metrics:** EWMA baseline (α = 0.3). The signal is anomalous at |z| ≥ 3, and `score = min(|z|/6, 1)`.
 - **Logs:** Drain3 template mining, with the template miner kept across micro-batches.
-  - A novel error template scores 0.8.
+  - A novel error template scores 0.8. A novel *warning* scores 0.55: it can join an incident but cannot anchor
+    one, because right after a start every routine warning is "new".
   - A burst (≥ 3 repeats and ≥ 4× the template's historical rate) scores `min(count/20 + 0.4, 1)`.
   - Only WARN and ERROR lines can be novel or a burst. An INFO line repeating is a busy, healthy service, never an anomaly.
   - A lone ERROR/CRITICAL line scores 0.6.
@@ -138,10 +161,17 @@ The suite runs in offline mode (`AIOPS_OFFLINE_DEMO=1`, `NEXUS_LIVE=0`, `CLAUDE_
    Tuned on seeds 1–20 and reported on held-out seeds 21–40.
 4. **Causal refinement.** Counterfactual root-cause analysis on the graph. Two independent roots whose evidence
    disagrees are split into two incidents. A cascade keeps one root.
-5. **Streaming behaviour** (`stream.py`):
-   - A new anomalous signal first tries to join an **open** incident through the same gate.
+5. **Streaming behaviour** (`stream.py`, `lifecycle.py`):
+   - A new anomalous signal first tries to join an **open** incident. It must pass the same gate **and** reach the
+     merge threshold (sim ≥ 0.34) with a member, exactly as two signals must to merge. The gate alone is not
+     enough: an open incident would grow one dependency hop at a time and absorb unrelated failures nearby.
    - Otherwise it waits in a pending pool.
    - Pending signals with no structural partner after 15 minutes of stream time expire as noise.
+   - A tick holding more than 2 s of event time (the backlog a stream sends on first connect, or a resume) is
+     processed in 2 s slices with the clock held at each slice, so a backlog forms the same incidents as live arrival.
+   - Regression test on a real burst recorded from the simulator
+     (`backend/tests/fixtures/live_burst_2026-09-26.jsonl`): an agency-db cascade, a rulesforge slowdown and an
+     SMTP outage must stay three incidents.
 
 ### C4 — Validation and scoring (`validate.py`, `severity.py`)
 - **Validation.** A candidate must pass all five checks, and failures are never raised:
@@ -188,7 +218,11 @@ generated estates with injected incidents. Held-out seeds 21–40, 80 runs:
 
 | | pair precision | pair recall | pair F1 | root-cause accuracy |
 |---|---|---|---|---|
-| overall | 0.590 | 0.837 | **0.658** | **0.965** |
+| overall | 0.636 | 0.837 | **0.686** | **0.969** |
+
+Precision rose from 0.590 to 0.636 (F1 0.658 → 0.686) with recall unchanged, after fixes found on the live
+simulator: an INFO line is never a burst, a new warning cannot anchor an incident, and a cluster needs
+independent evidence (validation check 5).
 
 Generated data is used only for this measurement (`GET /engine/benchmark`, the Evaluation page). It never
 enters the live engine.
@@ -196,7 +230,8 @@ enters the live engine.
 ## Repository layout
 
 ```
-backend/app/engine/     live.py (SSE), stream.py (micro-batch engine), nexus.py (parsers + canonical schema),
+backend/app/engine/     live.py (SSE), recording.py (record/resume/replay), stream.py (micro-batch engine),
+                        lifecycle.py (late signals), nexus.py (parsers + canonical schema),
                         redaction.py, detect.py, correlate.py, causal.py, validate.py, severity.py,
                         drafting.py, claude_drafting.py, review.py (approval gate), tickets.py (output/tickets)
 backend/app/engine_api.py   /engine/* routes (stream status, signals, graph, queue, approve/reject, evidence)
