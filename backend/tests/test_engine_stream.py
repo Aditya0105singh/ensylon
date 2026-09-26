@@ -291,6 +291,28 @@ def test_repeats_of_one_warning_are_not_an_incident():
     assert check.passed and check.detail == "2 distinct conditions"
 
 
+def test_an_open_incident_does_not_swallow_an_unrelated_neighbour():
+    """Live snowball: an SMTP outage on comms/carrier joined a DB incident one
+    dependency hop at a time. A late signal needs the merge threshold, not just
+    the gate."""
+    engine = _engine()
+    for s in [
+        _cw("2026-09-26T10:01:00Z", "agency-db", "db-connection-pool", 97.0),
+        _cw("2026-09-26T10:01:30Z", "payments-service", "db-connection-pool", 95.0),
+    ]:
+        _reader(engine, "aiops-cloudwatch").handle(next(iter_sse(iter(_sse([s])))))
+    engine.tick()
+    assert len(engine.result.incidents) == 1
+
+    # carrier-service calls agency-db (a dependency edge), but this is another failure
+    late = ("2026-09-26T10:12:00Z ERROR carrier-service smtp-client [host:carrier-prod-01] "
+            "SMTP relay connection refused - host smtp.relay.internal:587")
+    _reader(engine, "aiops-logs").handle(next(iter_sse(iter(_sse([late])))))
+    engine.tick()
+    assert "carrier-service" not in engine.result.incidents[0].cluster.services
+    assert any(s.service == "carrier-service" for s in engine.pending)
+
+
 def test_correlating_unrelated_pending_signals_does_not_crash():
     """No admissible pair leaves an empty distance matrix; sklearn used to raise
     IndexError on it, failing every live tick from then on."""

@@ -7,9 +7,14 @@ an identity that accumulates evidence:
 
     open -> drafting -> in_review -> published -> resolved
 
-A late signal is attached only if it passes the same shared-context gate the
-correlator uses (same service, dependency edge, common trace). Time alone never
-attaches anything. If it fails the gate it is recorded as noise, never merged.
+A late signal is attached only if it meets the same bar the correlator uses to
+merge two signals: the shared-context gate (same service, dependency edge,
+common trace) AND a weighted similarity at or above the merge threshold, with
+at least one member. The gate alone is not enough: an open incident would then
+grow one dependency hop at a time and swallow every unrelated failure nearby
+(seen on the live simulator, where an SMTP outage joined a DB incident through
+carrier-service). Time alone never attaches anything. A shared trace id is the
+same request, so it attaches on its own.
 """
 
 from __future__ import annotations
@@ -18,7 +23,8 @@ from datetime import datetime, timedelta
 from typing import Any
 
 from . import causal as causal_mod
-from .correlate import DependencyGraph, _gate_reason, near_misses
+from . import correlate as corr
+from .correlate import DependencyGraph, _gate_reason, near_misses, similarity
 from .drafting import ExcludedSignal, build_draft
 from .pipeline import IncidentResult, PipelineResult
 from .redaction import redact_signal
@@ -38,7 +44,9 @@ def _find_incident(
 ) -> tuple[IncidentResult, str] | None:
     """The open incident this signal may join, with the gate reason, or None."""
     horizon = timedelta(minutes=LATE_ATTACH_MAX_MIN)
-    best: tuple[int, IncidentResult, str] | None = None
+    threshold = 1.0 - corr.EPS
+    # rank: shared trace first, then the strongest similarity to any member
+    best: tuple[tuple[int, float], IncidentResult, str] | None = None
     for incident in result.incidents:
         item = queue.items.get(incident.draft.draft_id)
         if item is None or item.status not in _OPEN_STATUSES or item.lifecycle == "resolved":
@@ -49,10 +57,15 @@ def _find_incident(
             gate = _gate_reason(signal, member, graph)
             if gate is None:
                 continue
-            rank = 0 if gate == "shared trace_id" else 1 if gate == "same service" else 2
-            if best is None or rank < best[0]:
-                best = (rank, incident, gate)
-            break
+            if gate == "shared trace_id":
+                key = (0, 0.0)
+            else:
+                sim = similarity(signal, member, graph)
+                if sim is None or sim.total < threshold:
+                    continue
+                key = (1, -sim.total)
+            if best is None or key < best[0]:
+                best = (key, incident, gate)
     return None if best is None else (best[1], best[2])
 
 
