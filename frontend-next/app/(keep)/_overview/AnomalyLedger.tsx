@@ -62,10 +62,10 @@ export function AnomalyLedger({
   streamClock: string | null;
 }) {
   const [open, setOpen] = useState<string | null>(null);
-  // The backend filters by min_score; filter again so an older backend that
-  // ignores the parameter cannot put baseline signals in this list.
+  // The backend filters to flagged signals; filter again so an older backend
+  // that ignores the parameter cannot put baseline signals in this list.
   const rows = anomalies
-    .filter((s) => s.anomaly_score >= ANOMALY_THRESHOLD)
+    .filter((s) => s.metadata?.is_anomaly === true || s.anomaly_score >= ANOMALY_THRESHOLD)
     .map((s) => ({ s, fate: anomalyFate(s, incidents, streamClock) }));
 
   return (
@@ -85,7 +85,13 @@ export function AnomalyLedger({
                   onClick={() => setOpen(isOpen ? null : s.signal_id)}
                   aria-expanded={isOpen}
                 >
-                  <span className="font-mono text-[11px] font-bold text-red-700 tabular-nums w-9 shrink-0 mt-0.5">{s.anomaly_score.toFixed(2)}</span>
+                  <span
+                    className={clsx("font-mono text-[11px] font-bold tabular-nums w-9 shrink-0 mt-0.5",
+                      s.anomaly_score >= ANOMALY_THRESHOLD ? "text-red-700" : "text-amber-700")}
+                    title={s.anomaly_score >= ANOMALY_THRESHOLD ? "can anchor an incident" : "can join an incident, cannot anchor one"}
+                  >
+                    {s.anomaly_score.toFixed(2)}
+                  </span>
                   <span className="min-w-0 flex-1">
                     <span className="flex items-center gap-1.5 text-[11px] min-w-0">
                       <span className="font-mono text-gray-500 shrink-0">{clockUTC(s.timestamp)}</span>

@@ -28,7 +28,7 @@ const p1 = queue.find((q) => q.priority === "P1")!;
 const p2 = queue.find((q) => q.priority === "P2")!;
 const p1Evidence = fx[`/engine/queue/${p1.draft_id}/evidence`] as Evidence;
 // The Overview asks the backend for anomalies only.
-const ANOMALIES_URL = "/engine/stream/signals?limit=12&min_score=0.6";
+const ANOMALIES_URL = "/engine/stream/signals?limit=12&anomalous=true";
 const routes: Record<string, unknown> = { ...fx, [ANOMALIES_URL]: fx["/engine/stream/signals?limit=14"] };
 
 function mockApi(routes: Record<string, unknown>) {

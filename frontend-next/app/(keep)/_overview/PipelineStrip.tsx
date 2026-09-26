@@ -47,7 +47,7 @@ export function PipelineStrip({ status, incidents }: { status: StreamStatus; inc
       title: "Detect anomalies",
       value: e.anomalous,
       unit: e.anomalous === 1 ? "anomaly" : "anomalies",
-      lines: [`score ≥ ${ANOMALY_THRESHOLD.toFixed(2)}`, `${within.toLocaleString("en-US")} within baseline`],
+      lines: [`${within.toLocaleString("en-US")} within baseline`, `an incident needs one ≥ ${ANOMALY_THRESHOLD.toFixed(2)}`],
       href: "/correlations",
       color: "#d97706",
     },
@@ -81,7 +81,10 @@ export function PipelineStrip({ status, incidents }: { status: StreamStatus; inc
   ];
 
   const max = Math.max(1, e.signals_received);
-  const ratio = incidents.length > 0 ? e.signals_received / incidents.length : null;
+  // Compared with the anomalies a human would otherwise triage one by one, not
+  // with every baseline INFO line: nobody reads those, so counting them would
+  // inflate the claim.
+  const ratio = incidents.length > 0 ? e.anomalous / incidents.length : null;
 
   return (
     <section
@@ -97,7 +100,12 @@ export function PipelineStrip({ status, incidents }: { status: StreamStatus; inc
         <p className="text-xs text-gray-700">
           <b className="text-gray-900">{e.signals_received.toLocaleString("en-US")}</b> signals in →{" "}
           <b className="text-gray-900">{incidents.length}</b> {incidents.length === 1 ? "incident" : "incidents"} out
-          {ratio != null && ratio >= 2 && <span className="ml-1.5 rounded-full bg-green-100 text-green-800 font-bold px-2 py-0.5">{Math.round(ratio)}× less to read</span>}
+          {ratio != null && ratio >= 2 && (
+            <span className="ml-1.5 rounded-full bg-green-100 text-green-800 font-bold px-2 py-0.5"
+              title={`${e.anomalous} anomalies would each need a look; ${incidents.length} incidents do instead`}>
+              {e.anomalous} anomalies → {incidents.length} to triage ({Math.round(ratio)}× fewer)
+            </span>
+          )}
         </p>
       </header>
       <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">

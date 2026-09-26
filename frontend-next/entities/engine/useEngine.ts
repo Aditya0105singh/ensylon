@@ -60,18 +60,18 @@ export const useStreamMetrics = (options: SWRConfiguration = {}) => {
 };
 
 /** GET /engine/stream/signals - recent canonical (redacted) signals.
- * `minScore` keeps only signals with anomaly_score at or above it. */
+ * `anomalousOnly` keeps only the signals the detector flagged. */
 export const useStreamSignals = (
   source: string | null = null,
   limit = 200,
   options: SWRConfiguration = {},
-  minScore: number | null = null
+  anomalousOnly = false
 ) => {
   const api = useApi();
   const qs = new URLSearchParams({
     limit: String(limit),
     ...(source ? { source } : {}),
-    ...(minScore != null ? { min_score: String(minScore) } : {}),
+    ...(anomalousOnly ? { anomalous: "true" } : {}),
   });
   return useSWR<{ total: number; signals: CanonicalSignal[] }>(
     api.isReady() ? `/engine/stream/signals?${qs}` : null,

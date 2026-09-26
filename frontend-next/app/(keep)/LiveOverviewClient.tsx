@@ -17,7 +17,7 @@ import {
 } from "@/entities/engine/useEngine";
 import type { QueueSummary } from "@/entities/engine/types";
 import { PRIORITY_COLOR } from "@/entities/engine/charts";
-import { ANOMALY_THRESHOLD, cleanTitle, clockUTC, impact, rankIncidents } from "./_overview/lib";
+import { cleanTitle, clockUTC, impact, rankIncidents } from "./_overview/lib";
 import { StatusHero } from "./_overview/StatusHero";
 import { PipelineStrip } from "./_overview/PipelineStrip";
 import { IncidentStory } from "./_overview/IncidentStory";
@@ -82,7 +82,7 @@ function OtherIncident({ q, onSelect }: { q: QueueSummary; onSelect: () => void 
 export function LiveOverviewClient() {
   const { data: status, error } = useStreamStatus();
   const { data: queue } = useEngineQueue();
-  const { data: anomalies } = useStreamSignals(null, 12, {}, ANOMALY_THRESHOLD);
+  const { data: anomalies } = useStreamSignals(null, 12, {}, true);
   const { data: rejections } = useValidationRejections();
   const { data: metrics } = useStreamMetrics();
   const { data: graph } = useServiceGraph();
