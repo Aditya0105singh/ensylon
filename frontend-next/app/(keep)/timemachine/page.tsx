@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { TimeMachineClient } from "./TimeMachineClient";
 
 export const metadata = {
@@ -6,5 +7,10 @@ export const metadata = {
 };
 
 export default function Page() {
-  return <TimeMachineClient />;
+  // useSearchParams (?id=) needs a Suspense boundary in the app router
+  return (
+    <Suspense>
+      <TimeMachineClient />
+    </Suspense>
+  );
 }

@@ -1,12 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import clsx from "clsx";
 import { MotionConfig, motion } from "motion/react";
 import { TbTimeline } from "react-icons/tb";
 import { EmptyStateCard, KeepLoader, PageHero } from "@/shared/ui";
-import { useEngineEvidence, useEngineQueue, useServiceGraph } from "@/entities/engine/useEngine";
+import { useArchivedIncident, useEngineEvidence, useEngineQueue, useIncidentHistory, useServiceGraph } from "@/entities/engine/useEngine";
 import { PRIORITY_COLOR } from "@/entities/engine/charts";
 import type { Evidence, QueueSummary } from "@/entities/engine/types";
 import { cleanTitle, clockUTC } from "../_overview/lib";
@@ -95,16 +96,30 @@ function Replay({ ev, priority }: { ev: Evidence; priority: string }) {
 }
 
 export function TimeMachineClient() {
+  const params = useSearchParams();
   const { data: queue, isLoading } = useEngineQueue();
-  const [id, setId] = useState<string | null>(null);
-  const items = useMemo(
-    () => [...(queue ?? [])].filter((q) => q.status !== "merged").sort((a, b) => (a.started_at < b.started_at ? 1 : -1)),
-    [queue]
-  );
+  // The archive holds incidents from earlier sessions too, so last night's
+  // incident can still be replayed after a restart.
+  const { data: history } = useIncidentHistory({}, { refreshInterval: 30000 });
+  const [id, setId] = useState<string | null>(params.get("id"));
+  const items = useMemo(() => {
+    const byId = new Map<string, QueueSummary>();
+    (history ?? []).forEach((h) => byId.set(h.draft_id, {
+      draft_id: h.draft_id, title: h.title, priority: h.priority, severity_score: h.severity_score,
+      correlation_confidence: h.correlation_confidence, causal_confidence: 0, root_cause_service: h.root_cause_service,
+      affected_services: h.affected_services, signal_count: h.signal_count, started_at: h.started_at, status: h.status,
+      jira_key: h.ticket_key, merged_into: null, reviewer: h.decided_by?.name ?? null, suppressed: false, summary_source: "template",
+    }));
+    (queue ?? []).forEach((q) => byId.set(q.draft_id, q));      // live wins: it is current
+    return Array.from(byId.values()).filter((q) => q.status !== "merged").sort((a, b) => (a.started_at < b.started_at ? 1 : -1));
+  }, [queue, history]);
   const active = id ?? items[0]?.draft_id ?? null;
   const summary = items.find((q) => q.draft_id === active);
-  // Evidence of a replayed incident must not change under the playhead.
-  const { data: ev } = useEngineEvidence(active, { refreshInterval: 0, revalidateOnFocus: false });
+  // Evidence of a replayed incident must not change under the playhead. If the
+  // live engine no longer holds it (an earlier session), use the archived copy.
+  const { data: liveEv, error: liveErr } = useEngineEvidence(active, { refreshInterval: 0, revalidateOnFocus: false });
+  const { data: archived } = useArchivedIncident(liveErr ? active : null, { refreshInterval: 0 });
+  const ev = liveEv ?? archived?.evidence ?? undefined;
 
   return (
     <MotionConfig reducedMotion="user">
