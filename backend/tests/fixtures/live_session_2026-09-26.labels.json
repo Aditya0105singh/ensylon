@@ -1,0 +1,1820 @@
+{
+"01f960e9-3b57-442b-bc15-a6b933dc65ca": {
+"at": "2026-09-26T10:23:40+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"024b133b-c591-4145-9b57-f42e67cee907": {
+"at": "2026-09-26T10:24:17+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"031938bc-633d-42db-9839-4ed000b88f1f": {
+"at": "2026-09-26T10:47:53+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"0565c182-3fb0-4e8a-b459-1c527316fd5c": {
+"at": "2026-09-26T10:47:27+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"08d964ba-4237-4df0-ba5b-feca1ee63410": {
+"at": "2026-09-26T10:56:35+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"0bcbec36-37b2-4b92-a4c1-425eec27c7d2": {
+"at": "2026-09-26T10:24:06.001002+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"0cd0c0a9-9b18-4ad3-8e68-cb9fd9693238": {
+"at": "2026-09-26T10:56:33+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"0f501d82-0d14-404b-a723-d7576ad5de4d": {
+"at": "2026-09-26T10:39:52+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"10be84b6-aebd-4f89-8a96-e324ebdc1642": {
+"at": "2026-09-26T10:51:52.014718+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"1151baa1-d789-4b23-b910-a9eb37f4a94b": {
+"at": "2026-09-26T10:00:10+00:00",
+"incident": "rulesforge_slow#1",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"12ad6416-2298-4a5b-973c-d270584f8faf": {
+"at": "2026-09-26T10:56:24+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"15745caa-5ef3-4c3f-ba77-8c477df69aaa": {
+"at": "2026-09-26T09:57:40+00:00",
+"incident": "rulesforge_slow#1",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"15a908bb-a3ef-41df-bd50-33f0b5629c15": {
+"at": "2026-09-26T10:24:06.001002+00:00",
+"incident": "payments_config#2",
+"root": "payments-service",
+"rule": 11,
+"service": "payments-service",
+"story": "payments_config"
+},
+"15c9eaf6-b149-4435-a766-893c4058c630": {
+"at": "2026-09-26T10:56:44+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"17ead38a-e115-4ced-a434-0b5b96ebc18b": {
+"at": "2026-09-26T10:35:48+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"18a0095f-2b14-431f-9263-e74205110bc1": {
+"at": "2026-09-26T10:24:47+00:00",
+"incident": "cdn_latency#2",
+"root": "agency-gateway",
+"rule": 10,
+"service": "agency-gateway",
+"story": "cdn_latency"
+},
+"195a9f8f-256b-4f56-b634-80904a7dd478": {
+"at": "2026-09-26T09:59:07+00:00",
+"incident": "comms_smtp#1",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"196beeb6-e68b-439b-bbd6-b68afdbc1c51": {
+"at": "2026-09-26T10:24:45+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"1b2718cb-452b-461e-855f-303a41c1626d": {
+"at": "2026-09-26T10:23:12+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"1b7c4686-e94c-4270-b24e-cbc641b07676": {
+"at": "2026-09-26T09:52:21+00:00",
+"incident": "agencydb_pool#1",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"1be48e15-e320-48ca-954a-a27043f25632": {
+"at": "2026-09-26T10:34:04+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"1c066c83-5e97-49ba-a867-5bb4d9b34a58": {
+"at": "2026-09-26T10:50:10+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"1c1ca75d-c02e-43fc-8660-fbb51840c7a8": {
+"at": "2026-09-26T10:34:35+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"1dd6b2de-5a98-4681-9e8e-e14d583c08ec": {
+"at": "2026-09-26T10:52:35+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"1f7b9b0e-02da-4767-aea2-e603b9458d0c": {
+"at": "2026-09-26T10:24:35+00:00",
+"incident": "cdn_latency#2",
+"root": "agency-gateway",
+"rule": 10,
+"service": "agency-gateway",
+"story": "cdn_latency"
+},
+"1fb50fc7-c62d-4c67-831f-94dd6e315283": {
+"at": "2026-09-26T10:44:51+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"20200b75-3878-4524-aba7-7762be3db252": {
+"at": "2026-09-26T10:50:34+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"20c2e512-408b-4c59-9668-c5243f600b44": {
+"at": "2026-09-26T10:33:40+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"2125c23e-c191-4d39-8c5d-f0cba813b94c": {
+"at": "2026-09-26T10:22:12+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"22f34b05-0260-41d0-ae4f-48c86a677e8e": {
+"at": "2026-09-26T10:27:24+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"245c8305-e1d2-483d-82c2-a040cbedceff": {
+"at": "2026-09-26T10:47:44+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"257589ff-d440-4507-8909-af8f0ed1a86f": {
+"at": "2026-09-26T10:53:46+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"25824ce2-390a-47b3-a502-470856216499": {
+"at": "2026-09-26T10:48:49+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"25c259cd-58de-43b6-a981-63df34c299e8": {
+"at": "2026-09-26T10:50:31+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"26930071-f3d1-4ad5-920d-ee132341e21c": {
+"at": "2026-09-26T10:56:41+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"26edf3a8-ba79-449c-92e3-a50cf10214cc": {
+"at": "2026-09-26T10:48:18+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"28ce5048-7fb8-4d16-8de4-15be8879784f": {
+"at": "2026-09-26T10:51:52+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"29f0becd-12a2-4a7b-b4ca-87471e54d3f7": {
+"at": "2026-09-26T10:45:58+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"2af4eb81-d186-4f60-a135-de2e6a3be533": {
+"at": "2026-09-26T10:27:25+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"2b0ff62c-ce33-4fc9-b22d-2cdefb85b5ff": {
+"at": "2026-09-26T10:50:36+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"2c300759-8068-4fb0-9f11-57c1fa7d358f": {
+"at": "2026-09-26T10:33:25.008999+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"2d0b1674-0426-4bc2-a106-dac9e28d99e3": {
+"at": "2026-09-26T10:51:11+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"2d32be9e-ab68-414b-bac1-0af76946dfa9": {
+"at": "2026-09-26T10:23:40+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"2d3fcca1-d7b8-44ea-a322-ed91ea0ea4cd": {
+"at": "2026-09-26T10:33:31+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"2e1b655a-ad07-4edc-bac2-8fbef7991cf0": {
+"at": "2026-09-26T10:59:29+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"2e5505fb-27f8-4707-9a76-4c3372a6153f": {
+"at": "2026-09-26T10:34:35+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"2f97c985-1c32-4a71-a017-9e0832c56be0": {
+"at": "2026-09-26T10:50:34+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"302ac649-5946-4a61-8605-5f330a21d571": {
+"at": "2026-09-26T10:50:47.000274+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"305f28aa-e49a-4bd9-9d6f-87c19d5c122e": {
+"at": "2026-09-26T11:02:23+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"30cea9ff-ffba-4356-a4c9-66080a7463d4": {
+"at": "2026-09-26T10:51:34+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 16,
+"service": "agency-db",
+"story": "agencydb_pool"
+},
+"313538e2-c699-426f-b082-8874ecb17a4e": {
+"at": "2026-09-26T10:40:45+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"313ecfc8-7d16-45e0-8efe-b4e46604061f": {
+"at": "2026-09-26T10:50:52+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"31d9c861-27f1-435d-b201-6ad68974d3c0": {
+"at": "2026-09-26T11:03:54+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"320d4d78-7d87-4ce7-9394-39cefa1484c1": {
+"at": "2026-09-26T10:34:11+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"32fb17ab-3e74-4b93-b7f4-310bef06ef7d": {
+"at": "2026-09-26T10:50:24+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 16,
+"service": "agency-db",
+"story": "agencydb_pool"
+},
+"34b8aa2c-eb89-4f63-8b04-8c75701e56a2": {
+"at": "2026-09-26T07:56:30+00:00",
+"incident": "rulesforge_batch#1",
+"root": "rulesforge",
+"rule": 14,
+"service": "rulesforge",
+"story": "rulesforge_batch"
+},
+"34e0aa50-b3c4-4b10-8fe1-fe43b6badf6f": {
+"at": "2026-09-26T10:33:39+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"356cdaa6-09d5-473b-ba32-d32c9c4cef4e": {
+"at": "2026-09-26T10:46:26+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"35a4ba20-0a32-41fc-b090-dee87cbddedb": {
+"at": "2026-09-26T10:23:22+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"35e7999e-5739-42a4-b85c-43c5f0db5397": {
+"at": "2026-09-26T10:15:20+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"376192f0-693a-42dd-8002-da3bba2e3119": {
+"at": "2026-09-26T10:42:40+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"38491a23-57a4-4824-af0d-be53bd4f49eb": {
+"at": "2026-09-26T10:50:41+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"38aca43f-a2f2-4052-a42a-41ca0f975577": {
+"at": "2026-09-26T07:58:42+00:00",
+"incident": "rulesforge_batch#1",
+"root": "rulesforge",
+"rule": 14,
+"service": "rulesforge",
+"story": "rulesforge_batch"
+},
+"38ad59bf-51bd-4654-be9c-9480d8e5e09f": {
+"at": "2026-09-26T11:02:36+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"38d854dd-d134-47dd-92b2-c00f74aded07": {
+"at": "2026-09-26T10:51:10+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"38ef71db-4e20-4a41-a1ee-73b62c306918": {
+"at": "2026-09-26T10:20:37+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"39317947-4396-4bb6-b457-2c4d4ec36b52": {
+"at": "2026-09-26T10:51:22+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 8,
+"service": "carrier-service",
+"story": "agencydb_pool"
+},
+"3a689612-a837-473c-b175-67b4daf7b33a": {
+"at": "2026-09-26T10:56:32+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"3bbb6434-9de1-45be-ac24-bc3271b0a1ba": {
+"at": "2026-09-26T10:33:23+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"3c5c1346-e94e-4268-ac92-0668314e17a8": {
+"at": "2026-09-26T10:57:47+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"3daf7a74-f2a0-4ef8-81e6-56d79492d80a": {
+"at": "2026-09-26T11:06:41+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"3f07c237-8a91-4292-a1fe-c348f3cfbe72": {
+"at": "2026-09-26T10:57:02+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"3fa1ebdd-9aa8-4471-90cc-f8505d06214a": {
+"at": "2026-09-26T10:37:32+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"400abd48-139f-4880-a48e-005780fdf241": {
+"at": "2026-09-26T10:24:44+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"401de3db-1cbd-48ae-af84-700d119f4f11": {
+"at": "2026-09-26T10:29:06+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"401f10f4-97d8-4ddb-a5af-1085b7fdac69": {
+"at": "2026-09-26T10:23:52+00:00",
+"incident": "cdn_latency#2",
+"root": "agency-gateway",
+"rule": 10,
+"service": "agency-gateway",
+"story": "cdn_latency"
+},
+"4028da9a-9ae1-4aed-b4c2-f9302bfb1397": {
+"at": "2026-09-26T10:54:02+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"4183eb7a-1ef0-4050-ae59-1e9478ed1d73": {
+"at": "2026-09-26T10:36:05+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"433f260c-8fc0-4b0f-a643-973babfa26ca": {
+"at": "2026-09-26T10:46:30+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 7,
+"service": "comms-service",
+"story": "carrier_leak"
+},
+"4494cee0-0e4e-4585-8461-876b1db449aa": {
+"at": "2026-09-26T10:56:31.007969+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"452ac4b5-d869-4e2e-8407-1c2d0478edd9": {
+"at": "2026-09-26T10:23:42+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"48e1f4f1-47c9-4a85-af35-e764b1c4fb07": {
+"at": "2026-09-26T10:21:50+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"4a0f0101-34c1-424d-902e-39ea889c50a0": {
+"at": "2026-09-26T10:48:02+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"4b9542b3-d5ca-454f-a3c3-ef52e174fe2f": {
+"at": "2026-09-26T10:33:48+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"4b95af43-8bb1-4ce4-b07c-675ffa68d43a": {
+"at": "2026-09-26T10:27:19+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 16,
+"service": "agency-db",
+"story": "agencydb_pool"
+},
+"4bee7746-c0be-4a73-ad05-2df4e013c142": {
+"at": "2026-09-26T10:52:34+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"4d0436db-dd07-4636-8c51-2e0c099d428b": {
+"at": "2026-09-26T07:53:59+00:00",
+"incident": "carrier_leak#1",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"50738390-0ffb-4852-845e-79d350bfba19": {
+"at": "2026-09-26T10:27:33+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"507fcc8c-39c4-4b19-ba57-25913f68795b": {
+"at": "2026-09-26T10:49:05+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 7,
+"service": "comms-service",
+"story": "carrier_leak"
+},
+"52b01b19-f206-495e-9953-a31272ccd0e2": {
+"at": "2026-09-26T10:46:34.010004+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"547ea612-4a49-49b5-bdad-423d3f0bd20c": {
+"at": "2026-09-26T10:26:36+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"5631835d-a6f0-4ec6-8385-a652f646545a": {
+"at": "2026-09-26T10:57:24.018531+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"56636fee-414b-4688-9da2-d15b7d488930": {
+"at": "2026-09-26T10:50:32+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 8,
+"service": "carrier-service",
+"story": "agencydb_pool"
+},
+"57b639ab-26b6-4396-9ffe-00cd4c43fd40": {
+"at": "2026-09-26T10:13:13+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"59718b28-5c6a-478c-b48a-3332345dea06": {
+"at": "2026-09-26T10:58:23+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"598303f9-2ff5-426c-a683-8092f20b4ceb": {
+"at": "2026-09-26T10:49:17+00:00",
+"rule": 5,
+"service": "carrier-service",
+"story": "unsure"
+},
+"5b738fac-e3e8-47a8-b4f5-4238df022795": {
+"at": "2026-09-26T10:27:56.039000+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"5bc2b12f-8fe2-4946-a2fa-2af6554a6b8a": {
+"at": "2026-09-26T10:47:35+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 7,
+"service": "comms-service",
+"story": "carrier_leak"
+},
+"5c1ed94f-2c9d-40a4-b6c2-9394ea502c42": {
+"at": "2026-09-26T11:04:01+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"5d8bbe66-e3bd-4fbe-945a-c710decda168": {
+"at": "2026-09-26T10:56:26+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"5ef47328-f361-4e31-bc89-2377b0ec26b5": {
+"at": "2026-09-26T10:35:06+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"5f032387-fc78-4ed9-a6a6-bce5e4bcce14": {
+"at": "2026-09-26T10:44:23+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"5f7e164c-a94c-4702-9a80-ee90edf410dd": {
+"at": "2026-09-26T11:06:39+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"5fc9f1a4-6651-4c30-8d3a-f218d3bc81c9": {
+"at": "2026-09-26T10:45:33+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"604bafa2-c3cb-4308-b67b-83dec3401691": {
+"at": "2026-09-26T11:03:18+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"613531ed-a6e1-42ce-9955-327a7ecb28c4": {
+"at": "2026-09-26T10:57:14+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"62481fd5-9d4d-44dc-b41a-f99751c20814": {
+"at": "2026-09-26T10:23:49+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"6710e2ed-bda3-42f2-842d-b475ce509eff": {
+"at": "2026-09-26T10:24:52+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"697091fc-abfa-481b-b4dd-67851c9a503a": {
+"at": "2026-09-26T10:24:35+00:00",
+"incident": "cdn_latency#2",
+"root": "agency-gateway",
+"rule": 10,
+"service": "agency-gateway",
+"story": "cdn_latency"
+},
+"69fdf8cf-dc57-486e-b012-09acdd3588ce": {
+"at": "2026-09-26T10:27:56.040998+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"6a03d62f-a763-4bef-aa9a-02c46512df1c": {
+"at": "2026-09-26T10:59:26+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"6a3a5df2-be8b-48ef-b901-ca7834c55676": {
+"at": "2026-09-26T10:34:31+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"6ad03398-9d55-442d-aff8-e032560e20b8": {
+"at": "2026-09-26T11:01:40+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"6de7b7e1-a5f4-4015-b2ff-4ba068a0dd9f": {
+"at": "2026-09-26T07:51:54+00:00",
+"incident": "carrier_leak#1",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"6e26e62c-42ea-46a7-bf01-66bb55fa8902": {
+"at": "2026-09-26T10:50:29+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"6ea17558-54ad-4bfb-96b6-4e7df3446732": {
+"at": "2026-09-26T10:11:20+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"700d7dc8-be7b-40d6-a0b7-9e625a99b13f": {
+"at": "2026-09-26T10:48:39+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"71eb5da6-6e9b-4d76-974e-a0ecb1afa407": {
+"at": "2026-09-26T10:27:48+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"727663f2-25cf-44af-b0fb-54ec8ccccf96": {
+"at": "2026-09-26T10:39:53+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"72a0ad2b-7071-493c-aad9-5f2df02e8a48": {
+"at": "2026-09-26T10:19:00+00:00",
+"incident": "payments_config#2",
+"root": "payments-service",
+"rule": 11,
+"service": "payments-service",
+"story": "payments_config"
+},
+"7537a540-043d-4f5e-a538-2fabdaacfea8": {
+"at": "2026-09-26T10:10:40+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"76c24a8e-be33-49bc-b3d9-17439f80524c": {
+"at": "2026-09-26T10:54:30+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"787b8b6d-09e2-4227-9e10-4abb48ef539d": {
+"at": "2026-09-26T10:21:13+00:00",
+"incident": "rulesforge_batch#2",
+"root": "rulesforge",
+"rule": 14,
+"service": "rulesforge",
+"story": "rulesforge_batch"
+},
+"7a46956b-f382-4fda-9422-29ddc6bf3ab7": {
+"at": "2026-09-26T10:43:02+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"7a8593cb-d8d4-47d3-ae31-75b0a4e63d23": {
+"at": "2026-09-26T10:35:49+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"7ab0f555-fc84-490c-8d22-5a3e18d703fc": {
+"at": "2026-09-26T10:46:02+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"7b3dc9ff-e0ee-4f6f-ab7d-568d1123f327": {
+"at": "2026-09-26T10:58:52+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"7c42607b-ea50-4972-94c1-7b2d967ea2b3": {
+"at": "2026-09-26T10:42:47+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"7f03353c-6998-4a36-a14f-17a234b3c5ea": {
+"at": "2026-09-26T10:27:28+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 8,
+"service": "carrier-service",
+"story": "agencydb_pool"
+},
+"80007ce5-bcb4-43a2-8314-2aab53c95d04": {
+"at": "2026-09-26T10:20:09+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"800a39c1-780a-4e4a-8ddf-d57e7835e21e": {
+"at": "2026-09-26T10:27:29+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"8077ebf8-e405-40a0-a4dc-57ecbe00cab7": {
+"at": "2026-09-26T10:24:25.000997+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"8094e883-ea9c-4e5d-a379-3da84672d6d8": {
+"at": "2026-09-26T10:27:56.040998+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"83ce497d-9718-4832-82ae-743052c0298c": {
+"at": "2026-09-26T10:27:56.041998+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"88752ce8-af05-4b14-ae85-ef36757bffe1": {
+"at": "2026-09-26T10:12:06+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"88d37b6d-bad7-42ef-af82-8b1b1750f65f": {
+"at": "2026-09-26T10:25:18+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"8d92f7dd-7c33-440e-ab7c-0a486180b8fb": {
+"at": "2026-09-26T11:04:53+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"8ddeb6b6-5831-454c-bf92-b480044bd86a": {
+"at": "2026-09-26T10:26:26+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"8ec59cc2-6c11-43f5-843a-8b1795c747bd": {
+"at": "2026-09-26T10:23:49+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"90208454-9aa9-41e4-a17d-a8248085b00f": {
+"at": "2026-09-26T10:28:30+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 16,
+"service": "agency-db",
+"story": "agencydb_pool"
+},
+"90c3166e-8ad8-405c-8765-fb5e70dbd474": {
+"at": "2026-09-26T10:50:04+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"910cbcb9-bd8d-465c-81e8-f06e3fff1acc": {
+"at": "2026-09-26T10:48:25+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"92242ae5-0e80-4492-a1dd-14b3edf4f801": {
+"at": "2026-09-26T10:24:42+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"9295bfbd-54fb-4dd4-98d3-f255356bf033": {
+"at": "2026-09-26T10:34:26+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"92f42211-1dd2-4e9e-8c46-8d01334e5712": {
+"at": "2026-09-26T10:34:25+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"9432dfa1-969e-43f3-9b77-3f90127a8c37": {
+"at": "2026-09-26T10:24:44+00:00",
+"incident": "rulesforge_batch#2",
+"root": "rulesforge",
+"rule": 14,
+"service": "rulesforge",
+"story": "rulesforge_batch"
+},
+"975a4ad1-336f-4719-8e7d-6deb893b9c0b": {
+"at": "2026-09-26T11:00:04+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"9948a96d-dda1-4aa4-893e-da5492f5f582": {
+"at": "2026-09-26T10:47:19.012667+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"99966944-0602-46cd-8089-56dea9169bde": {
+"at": "2026-09-26T10:51:12+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"9bed0475-c053-40dd-b984-dfacc7b4e8de": {
+"at": "2026-09-26T10:27:22+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"9c2e9574-f691-44f7-ae0f-ab8cecb2a90a": {
+"at": "2026-09-26T10:58:58+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"9d499b5e-39e9-4432-b36d-fb1518b623a7": {
+"at": "2026-09-26T10:48:08+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"9e1f68cc-9148-4759-8af0-625683809807": {
+"at": "2026-09-26T07:57:42+00:00",
+"incident": "payments_config#1",
+"root": "payments-service",
+"rule": 11,
+"service": "payments-service",
+"story": "payments_config"
+},
+"9e9e7d31-8a2c-4681-83ce-14864a401ea5": {
+"at": "2026-09-26T07:56:59+00:00",
+"incident": "cdn_latency#1",
+"root": "agency-gateway",
+"rule": 10,
+"service": "agency-gateway",
+"story": "cdn_latency"
+},
+"9ecefc06-4f23-415e-9635-df5d88a1f6f7": {
+"at": "2026-09-26T09:51:55+00:00",
+"incident": "agencydb_pool#1",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"9eeb8061-c677-43a7-a13c-176f8ec11eec": {
+"at": "2026-09-26T10:50:34+00:00",
+"rule": 5,
+"service": "carrier-service",
+"story": "unsure"
+},
+"9f015fca-c2c5-41ed-b4c6-d931b617e399": {
+"at": "2026-09-26T10:41:04+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"9f3b758b-5052-4181-b30e-2c143313e70d": {
+"at": "2026-09-26T10:56:39+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"9f955073-678d-481a-812a-1241a91af1c8": {
+"at": "2026-09-26T10:20:00+00:00",
+"incident": "rulesforge_batch#2",
+"root": "rulesforge",
+"rule": 14,
+"service": "rulesforge",
+"story": "rulesforge_batch"
+},
+"a08b8579-2a1c-4dce-80ae-83ba429606a1": {
+"at": "2026-09-26T10:44:51+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"a0bbbc4c-7a9d-484a-b7a7-44bd6823b5cc": {
+"at": "2026-09-26T11:04:04+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"a0fb5f16-a58f-47af-8d6f-6a6324209179": {
+"at": "2026-09-26T10:48:16.005996+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"a1409935-b9ab-4e31-a610-5a958cb58e65": {
+"at": "2026-09-26T10:34:58+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"a2ec387e-5843-4bd3-a313-3990bbe3637f": {
+"at": "2026-09-26T10:24:42+00:00",
+"incident": "payments_config#2",
+"root": "payments-service",
+"rule": 11,
+"service": "payments-service",
+"story": "payments_config"
+},
+"a3a75abc-de4a-4254-a1cf-f97baf36c56c": {
+"at": "2026-09-26T10:23:37+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"a46f74a5-3db7-4802-bfec-099813cb4667": {
+"at": "2026-09-26T10:36:21+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"a4f58538-d47a-4a94-88f7-510b9e9d8848": {
+"at": "2026-09-26T10:49:44+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"a5c6689e-e08d-413d-9e5b-3ad421956441": {
+"at": "2026-09-26T10:49:39+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"a6623da0-7307-4865-b172-1606f74223dc": {
+"at": "2026-09-26T10:57:39+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"a8ed655c-9227-47c8-93de-6a2ae37b0267": {
+"at": "2026-09-26T10:56:49.013788+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"a940ea41-4c9f-4de2-b7ce-8a60a1f18cf2": {
+"at": "2026-09-26T10:23:04+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"a9afc923-ef68-4bb1-911b-da8d280d5328": {
+"at": "2026-09-26T10:56:28+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"aa07b7f8-4c61-4c11-be64-08b3c04906a7": {
+"at": "2026-09-26T10:28:48+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"aabda3a1-deb6-4658-841d-1084328b1085": {
+"at": "2026-09-26T10:34:17.007996+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"ae22d6bf-67c0-4066-89db-db251e56233c": {
+"at": "2026-09-26T10:46:47+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"b0ced540-f49a-487e-a205-fa730efeb141": {
+"at": "2026-09-26T10:47:02+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"b3a56fea-6804-4a68-afcd-ed1fa210d7a7": {
+"at": "2026-09-26T10:34:42+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"b4ffd0c4-a724-4748-ab5b-c38ee23c82a7": {
+"at": "2026-09-26T10:27:51+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"b56524e1-79c5-4905-868a-eae8e78cd160": {
+"at": "2026-09-26T10:27:38+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"b6daff5a-45a3-4a35-bcb6-0b01efa3481c": {
+"at": "2026-09-26T10:24:17+00:00",
+"incident": "rulesforge_batch#2",
+"root": "rulesforge",
+"rule": 14,
+"service": "rulesforge",
+"story": "rulesforge_batch"
+},
+"b711f0f6-1e3b-4cd6-a4e6-5256ae9e0409": {
+"at": "2026-09-26T10:38:09+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"b75ab24e-d918-4399-a9dd-533a660a030c": {
+"at": "2026-09-26T10:35:20+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"b83f1ebb-f403-4647-aceb-7e4b18ace5ec": {
+"at": "2026-09-26T10:50:56+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"b892c43c-36fa-4a4a-8ad1-10bfccdf88f7": {
+"at": "2026-09-26T10:33:00+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"b8b5f3df-5e7b-422d-9bcd-762ef9e925a7": {
+"at": "2026-09-26T09:51:40+00:00",
+"incident": "agencydb_pool#1",
+"root": "agency-db",
+"rule": 16,
+"service": "agency-db",
+"story": "agencydb_pool"
+},
+"b9967f96-93f5-4d32-86ec-1165a00a424e": {
+"at": "2026-09-26T10:34:57+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"ba8629b9-50b3-4bb7-987a-97482dd779d5": {
+"at": "2026-09-26T10:27:56.040998+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"baa631a8-654e-468d-93d0-d78483414400": {
+"at": "2026-09-26T10:26:10+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"bb599740-c203-4f27-a08a-a48d19589802": {
+"at": "2026-09-26T10:27:26+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"bb60c0d5-16df-483f-bcfb-a3350aa47a7f": {
+"at": "2026-09-26T10:27:56.040000+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"bbbe5c6c-fb28-496d-a010-466d39572db1": {
+"at": "2026-09-26T10:47:44+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"bc55ea18-dc0f-4212-aba5-903e83eadc1a": {
+"at": "2026-09-26T09:52:49+00:00",
+"incident": "agencydb_pool#1",
+"root": "agency-db",
+"rule": 16,
+"service": "agency-db",
+"story": "agencydb_pool"
+},
+"bd41a076-1449-4b69-a4b6-880dcd43b226": {
+"at": "2026-09-26T10:31:32+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"bedc6e77-137c-4815-9c32-427e1a18b761": {
+"at": "2026-09-26T10:56:52+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"bfe49e70-ca7e-4732-846d-cad041af738a": {
+"at": "2026-09-26T10:33:21+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"c2c617a1-f1bc-4d9e-a7bc-651f0bb26eac": {
+"at": "2026-09-26T10:58:05+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"c34a8cba-7d83-41aa-b4e2-d462748dcee3": {
+"at": "2026-09-26T10:20:18+00:00",
+"incident": "payments_config#2",
+"root": "payments-service",
+"rule": 11,
+"service": "payments-service",
+"story": "payments_config"
+},
+"c3bbc78f-a593-4a15-b197-dde9c37f5b71": {
+"at": "2026-09-26T10:55:00+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"c47a0597-e98a-4883-9efe-4d57d15bf605": {
+"at": "2026-09-26T10:17:48+00:00",
+"incident": "rulesforge_batch#2",
+"root": "rulesforge",
+"rule": 14,
+"service": "rulesforge",
+"story": "rulesforge_batch"
+},
+"c55d6da8-5640-4042-b2ba-cb9da37161e5": {
+"at": "2026-09-26T10:50:29+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"c630bd09-e495-4521-8062-fe80548acb21": {
+"at": "2026-09-26T10:33:19+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"c787301a-82f7-4427-a9fb-725e0248debd": {
+"at": "2026-09-26T10:28:07+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"c890c275-4d1b-4836-ae1c-18e773a8d251": {
+"at": "2026-09-26T10:29:28+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"cb0c4f14-9aa9-46a6-81aa-f6d8d7b8d892": {
+"at": "2026-09-26T10:46:19+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"cb275c2e-b216-4360-b710-7ab500d1dcce": {
+"at": "2026-09-26T11:04:20+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"cbbf250e-36ba-47bb-b597-f59fb669bb52": {
+"at": "2026-09-26T10:18:20+00:00",
+"incident": "cdn_latency#2",
+"root": "agency-gateway",
+"rule": 10,
+"service": "agency-gateway",
+"story": "cdn_latency"
+},
+"cc5a429d-11d4-41ef-9e4f-dd7955e5b484": {
+"at": "2026-09-26T10:33:26+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"cca7422c-785a-4152-a27e-e9f64abeff69": {
+"at": "2026-09-26T10:33:24+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"cf9c156e-0d50-47fd-ba2e-9650f6ac93fa": {
+"at": "2026-09-26T10:28:14+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 8,
+"service": "carrier-service",
+"story": "agencydb_pool"
+},
+"d08380c1-db0a-460d-bdee-eea3ad10b692": {
+"at": "2026-09-26T10:22:15+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"d257a76a-389a-4981-be6c-c128bc74422b": {
+"at": "2026-09-26T10:41:29+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"d3acf00e-1ccd-4794-a8ad-d595429c0733": {
+"at": "2026-09-26T09:57:52+00:00",
+"incident": "comms_smtp#1",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"d50944ff-b96c-489b-9da2-24dcf0e780cf": {
+"at": "2026-09-26T10:50:32.017117+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"d6627d37-9db1-4c5e-b53e-9541a1986bc5": {
+"at": "2026-09-26T10:47:11+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"d7cf86ef-56b8-45d6-99eb-e7fd623e582e": {
+"at": "2026-09-26T10:59:36+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"d8698898-b536-43b1-9f2a-44bf70a2302b": {
+"at": "2026-09-26T10:28:50.007007+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"d8f8a453-4f8f-4655-b6bb-061712b2520d": {
+"at": "2026-09-26T11:04:55+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"da1bff5d-00db-4f93-b3cd-1796116f87d1": {
+"at": "2026-09-26T11:05:41+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"da8bb341-6490-40a0-94ee-805b2158ac19": {
+"at": "2026-09-26T10:51:04+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"dc3beb00-832d-4c51-ad83-dd0621c3741a": {
+"at": "2026-09-26T10:51:23+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"debdcefc-4aa0-433c-b608-f6f6d196c1ec": {
+"at": "2026-09-26T10:24:47+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"df2b4d19-ae54-47b2-a7b3-9a2c2c77c5b0": {
+"at": "2026-09-26T10:41:48+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"e1177ac7-c438-4d85-97d0-8b12d8bb02df": {
+"at": "2026-09-26T10:24:22+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"e180a3a0-3a60-4c82-ab4a-a6789b8e1a0e": {
+"at": "2026-09-26T10:33:35+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"e28328ef-8d51-4da5-9ff8-36bf144971ac": {
+"at": "2026-09-26T10:46:42+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"e3201d3f-a304-4f56-b20d-e88a35540a9e": {
+"at": "2026-09-26T10:59:48+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"e4475f04-3706-4d6e-a2c8-7f9760ab52fb": {
+"at": "2026-09-26T11:04:10+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"e72a1ed9-f9c2-45b3-8039-e860354b03e6": {
+"at": "2026-09-26T10:24:31+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"e75e0fd9-6651-46e4-bdb1-65df2933f444": {
+"at": "2026-09-26T10:41:22+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"e9b36a72-00ae-404c-8af7-66ba3040492d": {
+"at": "2026-09-26T10:50:05+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"ea0fe8b6-7f41-435a-af3c-b0ab09cdfd91": {
+"at": "2026-09-26T10:56:59+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"eb532db9-b91a-4728-b60f-394303a20f1f": {
+"at": "2026-09-26T10:33:33+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"ebf2c807-869d-460f-a92c-7772179a8a2b": {
+"at": "2026-09-26T10:24:20+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 6,
+"service": "agency-gateway",
+"story": "carrier_leak"
+},
+"ed348b0c-633d-47f7-a22a-c3322c7d46aa": {
+"at": "2026-09-26T10:28:00+00:00",
+"incident": "agencydb_pool#2",
+"root": "agency-db",
+"rule": 17,
+"service": "enrollment-service",
+"story": "agencydb_pool"
+},
+"eee64575-e5d8-45c5-a59a-b5ed64ba04c9": {
+"at": "2026-09-26T10:30:48+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"f09e06b0-cc42-4cc6-adc0-40036cbe07ad": {
+"at": "2026-09-26T10:56:28+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"f0ab4701-355c-47ac-8b37-ed9745a30fee": {
+"at": "2026-09-26T10:22:02+00:00",
+"rule": 3,
+"service": "enrollment-service",
+"story": "decoy"
+},
+"f16118ca-ce15-40da-83e5-1ca3a6dda5be": {
+"at": "2026-09-26T10:31:00+00:00",
+"rule": 2,
+"service": "comms-service",
+"story": "decoy"
+},
+"f1acff2d-4af3-4f39-9269-bcf5b2b4160c": {
+"at": "2026-09-26T11:02:03+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"f1dfc726-419b-4fb4-9d4b-8963a0873859": {
+"at": "2026-09-26T10:55:35+00:00",
+"rule": 1,
+"service": "carrier-service",
+"story": "decoy"
+},
+"f1fbf74c-67ce-4702-8e22-45f4215f90bb": {
+"at": "2026-09-26T10:27:30+00:00",
+"rule": 5,
+"service": "carrier-service",
+"story": "unsure"
+},
+"f23d1e65-8c15-4fdb-a9fa-2d0e8e833541": {
+"at": "2026-09-26T09:58:10+00:00",
+"incident": "rulesforge_slow#1",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"f28c6655-b9b2-4321-b61f-4f5b6d5d71db": {
+"at": "2026-09-26T10:46:56+00:00",
+"incident": "carrier_leak#2",
+"root": "carrier-service",
+"rule": 9,
+"service": "carrier-service",
+"story": "carrier_leak"
+},
+"f2b36299-c770-4b34-af51-c9ae983a226d": {
+"at": "2026-09-26T10:30:56+00:00",
+"rule": 0,
+"service": "docforge",
+"story": "decoy"
+},
+"f3115d0f-796f-4bc7-b524-f437e9e616c5": {
+"at": "2026-09-26T10:50:29+00:00",
+"incident": "agencydb_pool#3",
+"root": "agency-db",
+"rule": 12,
+"service": "payments-service",
+"story": "agencydb_pool"
+},
+"f391eadb-abb9-4bff-befa-70af10311142": {
+"at": "2026-09-26T10:33:45.012412+00:00",
+"incident": "comms_smtp#2",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+},
+"f7028c6a-aaf8-4cb7-93fe-68f8a2ff1dda": {
+"at": "2026-09-26T10:57:06+00:00",
+"incident": "rulesforge_slow#3",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"f987c859-b504-45e1-92e5-f39cbeede7ca": {
+"at": "2026-09-26T10:33:59+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"f9de41d6-0c83-45a8-82fd-7b708892a65a": {
+"at": "2026-09-26T10:33:55+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 15,
+"service": "rulesforge",
+"story": "rulesforge_slow"
+},
+"fb2dc277-1f75-415a-ba25-7beb43e8a760": {
+"at": "2026-09-26T10:33:29+00:00",
+"incident": "rulesforge_slow#2",
+"root": "rulesforge",
+"rule": 13,
+"service": "payments-service",
+"story": "rulesforge_slow"
+},
+"fb8b04ca-6558-4340-afcd-0751f811ecda": {
+"at": "2026-09-26T10:41:55+00:00",
+"rule": 4,
+"service": "agency-gateway",
+"story": "unsure"
+},
+"fd2aa67a-46a3-4e2c-8bae-0e00f27e7f6c": {
+"at": "2026-09-26T10:57:28+00:00",
+"incident": "comms_smtp#3",
+"root": "comms-service",
+"rule": 18,
+"service": "comms-service",
+"story": "comms_smtp"
+}
+}
