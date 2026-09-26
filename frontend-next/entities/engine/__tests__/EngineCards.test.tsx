@@ -121,7 +121,7 @@ describe("EnginePipelineSection", () => {
     expect(await screen.findByText(/No run yet/i)).toBeInTheDocument();
   });
 
-  it("reports the review gate as healthy and Jira as a mock, and flags a missing LLM as degraded", async () => {
+  it("reports the review gate as healthy and the ticket output as approval-only, and flags a missing LLM as degraded", async () => {
     mockApi({
       "/engine/report": pipelineReport(),
       "/engine/queue": [queueSummary({ summary_source: "template" })],
@@ -131,7 +131,7 @@ describe("EnginePipelineSection", () => {
     expect(await screen.findByText("Human review gate")).toBeInTheDocument();
     expect(screen.getByText(/0 auto-published, always/)).toBeInTheDocument();
     expect(screen.getByText(/not configured: drafts use the deterministic template/)).toBeInTheDocument();
-    expect(screen.getByText(/mock transport/)).toBeInTheDocument();
+    expect(screen.getByText(/written only after a named human approves/)).toBeInTheDocument();
   });
 
   it("shows a grounded-summary note instead of the degraded one once an LLM produced a real draft", async () => {

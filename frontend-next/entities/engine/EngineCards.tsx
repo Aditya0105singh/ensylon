@@ -143,9 +143,9 @@ export function EnginePipelineSection() {
   const redacted = Object.values(report.redaction_counts).reduce((a, b) => a + b, 0);
   const health: { label: string; state: "ok" | "degraded"; note: string }[] = [
     { label: "Human review gate", state: "ok", note: `${report.auto_published} auto-published, always` },
-    { label: "Redaction", state: "ok", note: `${redacted} field(s) redacted before processing; NER ${report.redaction_backends.ner ? "on" : "off (regex only)"}` },
+    { label: "Redaction", state: "ok", note: `${redacted} field(s) redacted before processing; regex + name rules` },
     { label: "LLM narrative", state: llmDegraded ? "degraded" : "ok", note: llmDegraded ? "not configured: drafts use the deterministic template, review still works" : "grounded summaries active" },
-    { label: "Jira", state: "degraded", note: "mock transport (real REST client is a swap, no workflow change)" },
+    { label: "Ticket output", state: "ok", note: "files in output/tickets/, written only after a named human approves" },
     ...(report.calibration_warning ? [{ label: "P1 calibration", state: "degraded" as const, note: report.calibration_warning }] : []),
   ];
 
