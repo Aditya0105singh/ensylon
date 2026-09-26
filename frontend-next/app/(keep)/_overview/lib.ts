@@ -50,6 +50,15 @@ export const DIMENSIONS = [
   { key: "component_match", code: "C", label: "Same component" },
 ] as const;
 
+/** One color per similarity dimension, shared by every page that draws them. */
+export const DIM_COLOR: Record<string, string> = {
+  time_proximity: "#0ea5e9",
+  service_affinity: "#16a34a",
+  dependency_closeness: "#7c3aed",
+  template_similarity: "#f59e0b",
+  component_match: "#ec4899",
+};
+
 export type DimensionContribution = {
   key: string;
   code: string;

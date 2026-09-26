@@ -4,16 +4,9 @@ import { AnimatePresence, motion } from "motion/react";
 import { HiOutlineLink, HiOutlineSparkles, HiOutlineXCircle } from "react-icons/hi2";
 import type { Evidence } from "@/entities/engine/types";
 import { SOURCE_COLOR, SOURCE_NAME } from "@/entities/engine/charts";
-import { DIMENSIONS, MERGE_THRESHOLD, clockUTC } from "../_overview/lib";
+import { DIM_COLOR, DIMENSIONS, MERGE_THRESHOLD, clockUTC } from "../_overview/lib";
 import { sinceOnset, type Step } from "./model";
 
-const DIM_COLOR: Record<string, string> = {
-  time_proximity: "#0ea5e9",
-  service_affinity: "#16a34a",
-  dependency_closeness: "#7c3aed",
-  template_similarity: "#f59e0b",
-  component_match: "#ec4899",
-};
 const FALLBACK_W: Record<string, number> = {
   time_proximity: 0.25, service_affinity: 0.2, dependency_closeness: 0.2, template_similarity: 0.2, component_match: 0.15,
 };
