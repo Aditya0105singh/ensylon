@@ -1,0 +1,59 @@
+name: Deploy backend (Render, via GHCR image)
+
+# This repo is private and Render's GitHub App is not installed on it, so
+# Render never connects to this repo directly - it only ever pulls a
+# prebuilt image. This workflow builds that image and pushes it to GHCR
+# (using the run's own GITHUB_TOKEN, not a repo-access grant), then asks
+# Render to redeploy it.
+#
+# One-time setup this workflow does not do for you (see the backend section
+# of the deploy instructions): create the Render service once, pointed at
+# ghcr.io/<owner>/nexus-aiops-backend:latest via "Deploy an existing image",
+# then add this repo's RENDER_DEPLOY_HOOK_URL secret from that service's
+# Settings -> Deploy Hook. Until that secret exists, this workflow still
+# builds and publishes the image - it just skips the redeploy step.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "data/**"
+      - ".github/workflows/deploy-backend.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-backend-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: backend/Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/nexus-aiops-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Render redeploy
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
+        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"

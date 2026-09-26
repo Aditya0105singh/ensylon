@@ -1,0 +1,15 @@
+# Keeps the backend image build context small and secret-free. Applies to
+# any `docker build` from the repo root, currently just backend/Dockerfile.
+frontend-next/
+.git/
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+backend/.env
+backend/alertlens.db
+data/.cache/
+output/
+recordings/
+*.log

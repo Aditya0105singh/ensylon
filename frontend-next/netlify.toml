@@ -1,0 +1,9 @@
+# Deployed via the Netlify CLI from .github/workflows/deploy-frontend.yml,
+# not Netlify's own GitHub integration (this repo is private, no app
+# installed on it) - this file is what tells that CLI run how to build.
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"

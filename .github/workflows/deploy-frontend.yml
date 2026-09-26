@@ -1,0 +1,55 @@
+name: Deploy frontend (Netlify)
+
+# This repo is private and Netlify's GitHub App is not installed on it, so
+# this workflow pushes the built site directly via the Netlify CLI instead,
+# authenticating with a personal token rather than a repo-access grant.
+#
+# One-time setup this workflow does not do for you (see the frontend section
+# of the deploy instructions): create the Netlify site once (`netlify
+# sites:create` or the dashboard), set its runtime env vars there
+# (API_URL, ALERTLENS_API_KEY, AUTH_TYPE, NEXTAUTH_SECRET, NEXTAUTH_URL,
+# PUSHER_DISABLED), then add this repo's NETLIFY_AUTH_TOKEN and
+# NETLIFY_SITE_ID secrets.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend-next/**"
+      - ".github/workflows/deploy-frontend.yml"
+  workflow_dispatch: {}
+
+concurrency:
+  group: deploy-frontend-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend-next/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend-next
+        run: npm ci
+
+      - name: Build and deploy to Netlify
+        working-directory: frontend-next
+        # The build runs locally on this runner (netlify-cli's --build), so
+        # it needs the same build-time-only vars ci.yml uses for the same
+        # reason (auth.config.ts is evaluated during the build even for
+        # dynamic pages). The real values live in Netlify's site settings
+        # and take over at runtime; these two are placeholders good for the
+        # build step only.
+        env:
+          AUTH_TYPE: NO_AUTH
+          NEXTAUTH_SECRET: ci-build-only-not-a-real-secret
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+        run: npx --yes netlify-cli deploy --build --prod --site "$NETLIFY_SITE_ID"
