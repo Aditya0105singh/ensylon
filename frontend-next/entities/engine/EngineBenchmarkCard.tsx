@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { useEngineBenchmark } from "./useEngine";
+import { isComputing, useEngineBenchmark } from "./useEngine";
 
 const pct = (x: number) => `${Math.round(x * 100)}%`;
 
@@ -29,7 +29,9 @@ function Bar({ value }: { value: number }) {
  * reproduction check, and the baseline pipeline below is a different algorithm.
  */
 export function EngineBenchmarkCard() {
-  const { data, error, isLoading } = useEngineBenchmark();
+  const { data, error: rawError, isLoading: loading } = useEngineBenchmark();
+  const isLoading = loading || isComputing(rawError);
+  const error = isComputing(rawError) ? undefined : rawError;
 
   return (
     <section
@@ -68,7 +70,7 @@ export function EngineBenchmarkCard() {
         )}
       </div>
 
-      {isLoading && <p className="text-sm text-gray-600">Running the benchmark (a few seconds, once)...</p>}
+      {isLoading && !data && <p className="text-sm text-gray-600">Running the benchmark in the background (about 30 s after a restart, then instant)...</p>}
       {error && <p className="text-sm text-red-700">Benchmark unavailable: {String(error)}</p>}
 
       {data && (

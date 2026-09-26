@@ -159,12 +159,17 @@ export const useEngineHealth = (options: SWRConfiguration = {}) => {
 };
 
 /** GET /engine/benchmark — deterministic, so fetched once and never revalidated. */
+/** A live backend computes the benchmark suite in the background and answers
+ * 503 until it is ready: that is "still computing", not a failure. */
+export const isComputing = (error: unknown) => (error as { statusCode?: number } | undefined)?.statusCode === 503;
+const BENCHMARK_RETRY: SWRConfiguration = { errorRetryInterval: 5000, errorRetryCount: 40 };
+
 export const useEngineBenchmark = (options: SWRConfiguration = {}) => {
   const api = useApi();
   return useSWR<EngineBenchmark>(
     api.isReady() ? "/engine/benchmark" : null,
     (url: string) => api.get(url),
-    { revalidateOnFocus: false, revalidateIfStale: false, ...options }
+    { revalidateOnFocus: false, revalidateIfStale: false, ...BENCHMARK_RETRY, ...options }
   );
 };
 
@@ -174,7 +179,7 @@ export const useEngineAblation = (options: SWRConfiguration = {}) => {
   return useSWR<AblationRow[]>(
     api.isReady() ? "/engine/benchmark/ablation" : null,
     (url: string) => api.get(url),
-    { revalidateOnFocus: false, revalidateIfStale: false, ...options }
+    { revalidateOnFocus: false, revalidateIfStale: false, ...BENCHMARK_RETRY, ...options }
   );
 };
 
@@ -184,7 +189,7 @@ export const useEngineReliability = (options: SWRConfiguration = {}) => {
   return useSWR<ReliabilityBucket[]>(
     api.isReady() ? "/engine/benchmark/reliability" : null,
     (url: string) => api.get(url),
-    { revalidateOnFocus: false, revalidateIfStale: false, ...options }
+    { revalidateOnFocus: false, revalidateIfStale: false, ...BENCHMARK_RETRY, ...options }
   );
 };
 

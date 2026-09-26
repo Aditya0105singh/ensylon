@@ -266,3 +266,13 @@ def reliability(seeds: tuple[int, ...] = HELD_OUT_SEEDS) -> list[dict]:
         }
         for idx in sorted(buckets)
     ]
+
+
+def compute_all(seeds: tuple[int, ...] = HELD_OUT_SEEDS) -> dict:
+    """Everything the /engine/benchmark* routes serve, in one call.
+
+    A live backend runs this in a separate process at startup (see
+    engine_api.warm_benchmarks): it is ~30 s of pure-Python CPU, and inside the
+    server process it would hold the GIL against live ingestion and every
+    other request - long enough for the UI to report the backend offline."""
+    return {"benchmark": benchmark(seeds), "ablation": ablation(seeds), "reliability": reliability(seeds)}

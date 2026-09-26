@@ -891,6 +891,37 @@ def health() -> dict:
     }
 
 
+# The benchmark suite is deterministic and CPU-bound (~30 s). A live backend
+# computes it once, in a child process, so it never competes with ingestion
+# for the GIL; until it is ready the routes answer 503 with Retry-After.
+_BENCH_FUTURE = None
+
+
+def warm_benchmarks() -> None:
+    global _BENCH_FUTURE
+    if _BENCH_FUTURE is not None:
+        return
+    from concurrent.futures import ProcessPoolExecutor
+
+    pool = ProcessPoolExecutor(max_workers=1)
+    _BENCH_FUTURE = pool.submit(benchmark_mod.compute_all)
+    pool.shutdown(wait=False)
+
+
+def _bench(name: str):
+    future = _BENCH_FUTURE
+    if future is None:                      # tests, offline runs: compute in-process
+        return getattr(benchmark_mod, name)()
+    if not future.done():
+        raise HTTPException(503, "the benchmark is still running in the background; try again in a few seconds",
+                            headers={"Retry-After": "5"})
+    try:
+        return future.result()[name]
+    except Exception:
+        _log.exception("background benchmark failed; computing %s in-process", name)
+        return getattr(benchmark_mod, name)()
+
+
 @router.get("/benchmark")
 def engine_benchmark() -> dict:
     """The engine scored across generated estates on held-out seeds.
@@ -899,7 +930,7 @@ def engine_benchmark() -> dict:
     generalisation measurement. Computed once per process (deterministic), so
     the first call takes a few seconds and later calls are instant.
     """
-    return benchmark_mod.benchmark()
+    return _bench("benchmark")
 
 
 @router.get("/benchmark/ablation")
@@ -907,14 +938,14 @@ def engine_benchmark_ablation() -> list[dict]:
     """Pair F1 with one similarity dimension zeroed out at a time, plus a
     variant clustering on time proximity alone with the structural gate
     removed. Computed once per process, same held-out seeds as /benchmark."""
-    return benchmark_mod.ablation()
+    return _bench("ablation")
 
 
 @router.get("/benchmark/reliability")
 def engine_benchmark_reliability() -> list[dict]:
     """Calibration: predicted correlation confidence vs. actual cluster
     purity, bucketed in tenths. Computed once per process."""
-    return benchmark_mod.reliability()
+    return _bench("reliability")
 
 
 @offline_router.get("/topologies")
@@ -993,6 +1024,8 @@ def start_live(connect: bool = True):
     global _ARCHIVE, _REQUIRE_EMAIL
     _REQUIRE_EMAIL = bool(connect)
     _ARCHIVE = bool(connect) and not live_mod.REPLAY
+    if connect:
+        warm_benchmarks()
     if _ARCHIVE:
         archive_mod.init()
         restored = _restore_decisions()
