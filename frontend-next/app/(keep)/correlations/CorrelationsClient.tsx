@@ -55,7 +55,7 @@ function Rules() {
             ))}
           </ul>
         </Rule>
-        <Rule n="2" title="Similarity: five weighted dimensions, merge at 0.34" open={open.has("sim")} onToggle={() => toggle("sim")}>
+        <Rule n="2" title="Similarity: five weighted dimensions, merge at 0.45" open={open.has("sim")} onToggle={() => toggle("sim")}>
           <table className="w-full">
             <thead className="text-gray-500 text-left"><tr><th className="py-1">dimension</th><th>weight</th><th>computed as</th></tr></thead>
             <tbody className="divide-y divide-gray-100">
@@ -68,7 +68,7 @@ function Rules() {
               ))}
             </tbody>
           </table>
-          <p className="mt-2">DBSCAN on distance 1 − sim (eps 0.66, min_samples 2). Window: 15 minutes.</p>
+          <p className="mt-2">DBSCAN on distance 1 − sim (eps 0.55, min_samples 2). Window: 15 minutes. Time can contribute at most 0.36, below the 0.45 line.</p>
         </Rule>
         <Rule n="3" title="Causal refinement" open={open.has("causal")} onToggle={() => toggle("causal")}>
           Within each cluster, counterfactual root-cause analysis over the dependency graph finds the services nothing else in the cluster explains.
@@ -96,7 +96,7 @@ function Rules() {
             <div>
               <div className="font-mono bg-gray-50 rounded-lg p-2 mb-1.5">confidence = 0.40·density + 0.35·topology + 0.25·evidence</div>
               <ul className="space-y-0.5">
-                <li><b>density</b>: share of signal pairs that pass the gate and score ≥ 0.34</li>
+                <li><b>density</b>: share of signal pairs that pass the gate and score ≥ 0.45</li>
                 <li><b>topology</b>: share of service pairs within 2 hops on the reference graph</li>
                 <li><b>evidence</b>: mean over signals of the best evidence or component agreement with another member</li>
               </ul>

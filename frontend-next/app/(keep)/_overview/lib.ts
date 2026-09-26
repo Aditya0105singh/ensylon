@@ -7,7 +7,7 @@ import type {
 } from "@/entities/engine/types";
 
 /** Must match EPS in backend/app/engine/correlate.py (similarity >= 1 - EPS). */
-export const MERGE_THRESHOLD = 0.34;
+export const MERGE_THRESHOLD = 0.45;
 /** Must match the anomaly-support validation minimum in validate.py. */
 export const ANOMALY_THRESHOLD = 0.6;
 

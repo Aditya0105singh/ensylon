@@ -119,7 +119,7 @@ describe("TimeMachineClient", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Next signal" }));
     expect(await within(explain).findByText(/Passed the gate/)).toBeInTheDocument();
-    expect(within(explain).getByText("merge ≥ 0.34")).toBeInTheDocument();
+    expect(within(explain).getByText("merge ≥ 0.45")).toBeInTheDocument();
     expect(within(explain).getByText(/cleared by \+/)).toBeInTheDocument();
   });
 

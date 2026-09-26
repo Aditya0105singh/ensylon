@@ -2,7 +2,7 @@
  * The engine's rules as this page states them. Every value mirrors the backend
  * (checked against it, not the README):
  *   correlate.py  _gate_reason, time_proximity, service_affinity, _HOP_CLOSENESS,
- *                 WINDOW_MAX_MIN 15, TIME_SCALE_MIN 4, EPS 0.66, MIN_SAMPLES 2
+ *                 WINDOW_MAX_MIN 15, TIME_SCALE_MIN 1, EPS 0.55, MIN_SAMPLES 2, MENTION_EVIDENCE 0.6
  *   validate.py   MIN_DENSITY 0.25, WEAK_BRIDGE 0.50, MIN_ANOMALY 0.60, five checks
  *   lifecycle.py  late signals: gate + merge threshold, LATE_ATTACH_MAX_MIN 60
  *   stream.py     PENDING_WINDOW_MIN 15, SLICE_SECONDS 2
@@ -10,18 +10,18 @@
  * If a constant changes there, change it here.
  */
 
-export const MERGE = 0.34;
+export const MERGE = 0.45;
 
 export const DIMS = [
-  { key: "time_proximity", code: "T", name: "Time proximity", weight: 0.25,
-    how: "exp(−Δt / 4 min), and 0 beyond the 15-minute window" },
-  { key: "service_affinity", code: "S", name: "Service affinity", weight: 0.2,
+  { key: "time_proximity", code: "T", name: "Time proximity", weight: 0.36,
+    how: "exp(−Δt / 1 min), and 0 beyond the 15-minute window" },
+  { key: "service_affinity", code: "S", name: "Service affinity", weight: 0.06,
     how: "1.0 same service and component, 0.85 same service, else 0" },
-  { key: "dependency_closeness", code: "D", name: "Dependency closeness", weight: 0.2,
+  { key: "dependency_closeness", code: "D", name: "Dependency closeness", weight: 0.33,
     how: "hops on the reference graph: 0 → 1.0, 1 → 0.75, 2 → 0.45, 3 → 0.15" },
-  { key: "template_similarity", code: "E", name: "Evidence similarity", weight: 0.2,
-    how: "same Drain3 log template = 1.0, else token Jaccard on the redacted text" },
-  { key: "component_match", code: "C", name: "Component match", weight: 0.15,
+  { key: "template_similarity", code: "E", name: "Evidence similarity", weight: 0.19,
+    how: "same Drain3 log template = 1.0, else token Jaccard on the redacted text; at least 0.6 when one signal names the other's service" },
+  { key: "component_match", code: "C", name: "Component match", weight: 0.06,
     how: "1.0 when both signals report the same component" },
 ] as const;
 
@@ -47,7 +47,7 @@ export const CHECKS = [
 ];
 
 export const STREAMING = [
-  { name: "Joining an open incident", rule: "a new signal joins an open incident only through the gate and with similarity ≥ 0.34 to a member, the same bar as forming one. The gate alone would let an incident grow one hop at a time and swallow unrelated failures nearby." },
+  { name: "Joining an open incident", rule: "a new signal joins an open incident only through the gate and with similarity ≥ 0.45 to a member, the same bar as forming one. The gate alone would let an incident grow one hop at a time and swallow unrelated failures nearby." },
   { name: "Waiting for a partner", rule: "an anomaly with no structural partner waits in a pending pool for 15 minutes of stream time, then expires as noise." },
   { name: "Backlog", rule: "a tick holding more than 2 s of event time (a stream's backlog on first connect, or a resume) is processed in 2 s slices, so it forms the same incidents as live arrival." },
   { name: "Late evidence", rule: "up to 60 minutes after an incident's last signal. Before approval it refreshes the draft; after, it is added to the written ticket, never a second ticket." },

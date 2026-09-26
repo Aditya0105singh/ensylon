@@ -178,7 +178,7 @@ export function PipelineStages({
       badge: `${report.noise_signals} kept as noise`,
       purpose: "Group signals that belong to one incident — never force unrelated signals together.",
       algorithm: "A structural gate first (same service, dependency edge, component, or service named in the evidence), then a five-dimension similarity, then DBSCAN. Time alone never links two signals.",
-      parameters: "0.25 T + 0.20 S + 0.20 D + 0.20 E + 0.15 C · merge at ≥ 0.34 · 15 min window",
+      parameters: "0.36 T + 0.06 S + 0.33 D + 0.19 E + 0.06 C · merge at ≥ 0.45 · 15 min window",
       inputs: `${report.anomalies_detected} anomalous · ${report.possible_pairs} possible pairs, ${report.candidate_pairs} scored after blocking`,
       outputs: `${report.incidents_formed} clusters, ${report.noise_signals} background noise`,
     },

@@ -79,12 +79,12 @@ describe("CorrelationsClient", () => {
     renderPage();
     const formula = await screen.findByRole("region", { name: "Similarity formula" });
     const verdict = within(formula).getByRole("status", { name: "Verdict" });
-    expect(verdict).toHaveTextContent("sim 0.26");
+    expect(verdict).toHaveTextContent("sim 0.37");
     expect(verdict).toHaveTextContent("fails the gate");
     expect(verdict).toHaveTextContent("Time alone cannot link two signals");
 
-    fireEvent.click(within(formula).getByRole("button", { name: "Caller and callee, 1 min apart" }));
-    expect(verdict).toHaveTextContent("sim 0.37");
+    fireEvent.click(within(formula).getByRole("button", { name: "Caller and callee, 10 s apart" }));
+    expect(verdict).toHaveTextContent("sim 0.57");
     expect(verdict).toHaveTextContent("over the line: same incident");
 
     fireEvent.click(within(formula).getByRole("button", { name: "Neighbours, 12 min apart" }));

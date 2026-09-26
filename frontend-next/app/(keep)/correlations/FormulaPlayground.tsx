@@ -14,24 +14,36 @@ const PRESETS: { label: string; gate: boolean; values: Values; says: string }[] 
     label: "Same instant, unrelated services",
     gate: false,
     values: { time_proximity: 1, service_affinity: 0, dependency_closeness: 0, template_similarity: 0.05, component_match: 0 },
-    says: "Fails the gate, and would score 0.26 anyway: even perfect timing is worth only 0.25. Time alone cannot link two signals.",
+    says: "Fails the gate, and would score 0.37 anyway: even perfect timing is worth only 0.36, below the 0.45 line. Time alone cannot link two signals.",
   },
   {
-    label: "Same service, 3 min apart",
+    label: "Same service, 1 min apart",
     gate: true,
-    values: { time_proximity: 0.47, service_affinity: 0.85, dependency_closeness: 1, template_similarity: 0.2, component_match: 0 },
-    says: "The common case: same service, different messages a few minutes apart. Clears the line.",
+    values: { time_proximity: 0.37, service_affinity: 0.85, dependency_closeness: 1, template_similarity: 0.2, component_match: 0 },
+    says: "Same service, different messages, a minute apart. Clears the line.",
   },
   {
-    label: "Caller and callee, 1 min apart",
+    label: "Same service, 3 min apart, unrelated wording",
     gate: true,
-    values: { time_proximity: 0.78, service_affinity: 0, dependency_closeness: 0.75, template_similarity: 0.1, component_match: 0 },
-    says: "A cascade: one hop on the graph and close in time. Clears the line through topology, not timing.",
+    values: { time_proximity: 0.05, service_affinity: 0.85, dependency_closeness: 1, template_similarity: 0, component_match: 0 },
+    says: "Same service alone is not enough: a few minutes apart with nothing else in common stays separate. One service can take part in several unrelated problems.",
+  },
+  {
+    label: "Caller and callee, 10 s apart",
+    gate: true,
+    values: { time_proximity: 0.85, service_affinity: 0, dependency_closeness: 0.75, template_similarity: 0.1, component_match: 0 },
+    says: "A cascade: one hop on the graph and seconds apart. Clears the line through topology and timing together.",
+  },
+  {
+    label: "Names the other service, 1 min apart",
+    gate: true,
+    values: { time_proximity: 0.37, service_affinity: 0, dependency_closeness: 0.75, template_similarity: 0.6, component_match: 0 },
+    says: "One signal names the other's service, as in \"Circuit breaker OPEN for payments-service\". That counts as strong evidence, so it clears the line.",
   },
   {
     label: "Neighbours, 12 min apart",
     gate: true,
-    values: { time_proximity: 0.05, service_affinity: 0, dependency_closeness: 0.75, template_similarity: 0.05, component_match: 0 },
+    values: { time_proximity: 0, service_affinity: 0, dependency_closeness: 0.75, template_similarity: 0.05, component_match: 0 },
     says: "Structurally related but too far apart and saying different things: stays two separate problems.",
   },
 ];
@@ -59,7 +71,7 @@ export function FormulaPlayground() {
       </div>
 
       {/* the equation */}
-      <div className="mt-3 flex flex-wrap items-center gap-1.5 font-mono text-sm" aria-label="sim = 0.25·T + 0.20·S + 0.20·D + 0.20·E + 0.15·C, merge at 0.34">
+      <div className="mt-3 flex flex-wrap items-center gap-1.5 font-mono text-sm" aria-label="sim = 0.36·T + 0.06·S + 0.33·D + 0.19·E + 0.06·C, merge at 0.45">
         <span className="font-bold text-gray-900">sim</span><span className="text-gray-400">=</span>
         {DIMS.map((d, i) => (
           <span key={d.key} className="inline-flex items-center gap-1.5">
@@ -77,8 +89,8 @@ export function FormulaPlayground() {
         <span className="text-gray-400 ml-1">≥</span><span className="rounded-lg border-2 border-gray-900 px-2 py-0.5 font-bold">{MERGE}</span>
       </div>
       <p className="mt-2 text-xs text-gray-600">
-        Scored only after the pair passes the <b>structural gate</b>. DBSCAN on distance 1 − sim (eps 0.66, min_samples 2) groups
-        pairs over the line. Tuned on seeds 1–20, reported on held-out seeds 21–40.
+        Scored only after the pair passes the <b>structural gate</b>. DBSCAN on distance 1 − sim (eps 0.55, min_samples 2) groups
+        pairs over the line. Tuned on a hand-labelled recording of the real simulator and checked on generated estates.
       </p>
 
       {/* try it */}
