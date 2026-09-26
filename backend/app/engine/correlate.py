@@ -485,8 +485,11 @@ def correlate(
     n = len(anomalous)
     matrix = csr_matrix((data, (rows, cols)), shape=(n, n))
     # sklearn scans each row assuming ascending distances; handing it an
-    # unsorted graph works but re-sorts internally and warns every call.
-    matrix = sort_graph_by_row_values(matrix, warn_when_not_sorted=False)
+    # unsorted graph works but re-sorts internally and warns every call. An
+    # empty graph (no pair admissible) has nothing to sort, and sklearn's check
+    # raises IndexError on it - which, in the live loop, would fail every tick.
+    if matrix.nnz:
+        matrix = sort_graph_by_row_values(matrix, warn_when_not_sorted=False)
     labels = DBSCAN(eps=EPS, min_samples=MIN_SAMPLES, metric="precomputed").fit_predict(matrix)
 
     grouped: dict[int, list[int]] = defaultdict(list)

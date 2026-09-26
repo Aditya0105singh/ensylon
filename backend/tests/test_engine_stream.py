@@ -289,3 +289,15 @@ def test_repeats_of_one_warning_are_not_an_incident():
 
     check = _independent_evidence(mixed)
     assert check.passed and check.detail == "2 distinct conditions"
+
+
+def test_correlating_unrelated_pending_signals_does_not_crash():
+    """No admissible pair leaves an empty distance matrix; sklearn used to raise
+    IndexError on it, failing every live tick from then on."""
+    from app.engine.correlate import correlate
+
+    graph = graph_from_adjacency(FALLBACK_GRAPH)
+    a = _log(0, "HIGH", "Disk full", service="docforge", template="T1")
+    b = _log(30, "HIGH", "Quota exceeded", service="batch-report", template="T2")
+    clusters, noise, _ = correlate([a, b], graph)
+    assert clusters == [] and len(noise) == 2
