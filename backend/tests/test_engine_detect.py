@@ -187,6 +187,15 @@ class TestDetectLogs:
         assert "novel" in out[0].detection_reason
         assert report.novel_templates == 1
 
+    def test_a_new_warning_can_join_but_not_anchor_an_incident(self):
+        from app.engine.validate import MIN_ANOMALY
+
+        out, _, _ = detect([sig(severity=Severity.WARNING, message="gc pause 408ms")])
+        assert out[0].is_anomaly is True
+        assert out[0].anomaly_score < MIN_ANOMALY
+        err, _, _ = detect([sig(severity=Severity.HIGH, message="brand new failure")])
+        assert err[0].anomaly_score >= MIN_ANOMALY
+
     def test_info_severity_repeating_is_never_flagged(self):
         """A healthy heartbeat line repeating is just a working system."""
         signals = [sig(severity=Severity.INFO, message="heartbeat ok", seconds=i) for i in range(10)]

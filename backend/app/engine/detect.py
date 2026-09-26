@@ -36,6 +36,7 @@ Z_THRESHOLD = 3.0         # deviations before a metric is anomalous
 MIN_WARMUP = 5            # observations before a baseline is trusted at all
 BURST_MIN_COUNT = 3       # repeats of one template before it counts as a burst
 BURST_RATIO = 4.0         # ...or this many times its historical rate
+NOVEL_WARNING_SCORE = 0.55 # new warning: can join an incident, cannot anchor one (validate.MIN_ANOMALY = 0.6)
 
 
 # --------------------------------------------------------------------------
@@ -333,11 +334,15 @@ def _judge_log(
     notable = signal.severity in _NOTABLE_SEVERITIES
 
     # A template never seen before is inherently interesting — a brand-new
-    # error message is exactly what a fresh failure mode looks like.
+    # error message is exactly what a fresh failure mode looks like. A new
+    # *warning* is worth watching (it can join an incident) but scores below
+    # the anomaly-support minimum, so it cannot anchor one on its own: right
+    # after a start every routine warning is "new", and on the live simulator
+    # three unrelated carrier-service warnings otherwise became a P2.
     if expected is None and notable:
         report.novel_templates += 1
         signal.is_anomaly = True
-        signal.anomaly_score = 0.8
+        signal.anomaly_score = 0.8 if is_error else NOVEL_WARNING_SCORE
         kind = "error" if is_error else "warning"
         signal.detection_reason = f"novel {kind} template {tid} not seen in baseline"
         return
