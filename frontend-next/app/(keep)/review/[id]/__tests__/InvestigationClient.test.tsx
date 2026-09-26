@@ -92,17 +92,24 @@ describe("InvestigationClient — funnel and header", () => {
     expect(within(rejectedBlock).getByText("1")).toBeInTheDocument();
   });
 
-  it("shows the draft's priority and review status in the hero", async () => {
+  it("puts priority, status, scores and the decision in the bar at the top", async () => {
     renderPage(baseRoutes({ draft: { priority: "P1", status: "awaiting_review" } }));
-    const status = await screen.findByText("Awaiting human review");
-    const hero = status.closest("div.relative") as HTMLElement;
-    expect(within(hero).getByText("P1")).toBeInTheDocument();
+    const bar = await screen.findByRole("region", { name: "Decision" });
+    expect(within(bar).getByText("P1")).toBeInTheDocument();
+    expect(within(bar).getByText("Awaiting human review")).toBeInTheDocument();
+    expect(within(bar).getByLabelText(/^Impact: \d+/)).toBeInTheDocument();
+    expect(within(bar).getByLabelText(/^Confidence: \d\.\d\d/)).toBeInTheDocument();
+    for (const name of [/^approve$/i, /edit & approve/i, /^reject$/i]) {
+      expect(within(bar).getByRole("button", { name })).toBeInTheDocument();
+    }
+    expect(within(bar).queryByText(/\[DRAFT\]/)).not.toBeInTheDocument();
   });
 });
 
 describe("InvestigationClient — Correlation Explorer", () => {
   it("shows why each signal joined, including a repeated-signal badge", async () => {
     renderPage(baseRoutes());
+    fireEvent.click(await screen.findByRole("tab", { name: /Signals & joins/ }));
     expect(await screen.findByText("×12 collapsed into 1")).toBeInTheDocument();
     expect(screen.getByText("root-cause signal")).toBeInTheDocument();
     expect(screen.getAllByText(/Same service|Dependency link/).length).toBeGreaterThan(0);
@@ -110,6 +117,7 @@ describe("InvestigationClient — Correlation Explorer", () => {
 
   it("lists a rejected signal with its failed checks and the reason, under Considered and rejected", async () => {
     renderPage(baseRoutes());
+    fireEvent.click(await screen.findByRole("tab", { name: /Rejected \(1\)/ }));
     const heading = await screen.findByText("Considered and rejected");
     const section = heading.parentElement as HTMLElement;
     expect(within(section).getByText("REJECTED FROM INCIDENT")).toBeInTheDocument();
@@ -128,6 +136,7 @@ describe("InvestigationClient — root cause, severity, confidence, history", ()
 
   it("shows the priority, score and every weighted factor's contribution", async () => {
     renderPage(baseRoutes());
+    fireEvent.click(await screen.findByRole("tab", { name: "Severity" }));
     expect(await screen.findByText("Severity — why this priority")).toBeInTheDocument();
     expect(screen.getByText("0.846")).toBeInTheDocument();
     expect(screen.getByText("≥ 0.75 → P1")).toBeInTheDocument();
@@ -147,6 +156,7 @@ describe("InvestigationClient — root cause, severity, confidence, history", ()
         },
       })
     );
+    fireEvent.click(await screen.findByRole("tab", { name: "Historical match" }));
     expect(await screen.findByText("INC-0417")).toBeInTheDocument();
     expect(screen.getByText("90% similar")).toBeInTheDocument();
     expect(screen.getByText(/Raised the pool size/)).toBeInTheDocument();
@@ -256,8 +266,9 @@ describe("InvestigationClient — the review gate", () => {
     renderPage(baseRoutes(), { post });
     await screen.findByText("AWAITING HUMAN REVIEW");
 
-    fireEvent.change(screen.getByLabelText("Reject reason"), { target: { value: "known deploy" } });
     fireEvent.click(screen.getByRole("button", { name: /^reject$/i }));
+    fireEvent.change(await screen.findByLabelText("Reject reason"), { target: { value: "known deploy" } });
+    fireEvent.click(screen.getByRole("button", { name: /confirm reject/i }));
 
     await waitFor(() =>
       expect(post).toHaveBeenCalledWith(`/engine/queue/${DRAFT_ID}/reject`, {
