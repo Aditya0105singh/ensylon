@@ -596,7 +596,7 @@ def _late_signal(inc, kind: str):
     from datetime import timedelta
     from .engine import adapters
 
-    at = inc.cluster.end + timedelta(minutes=6)
+    at = inc.cluster.end + timedelta(minutes=2)
     if kind == "unrelated":
         return adapters.from_cloudwatch_alarm({
             "AlarmName": "batch-report-CPUUtilization-alarm", "NewStateValue": "ALARM",
@@ -610,12 +610,16 @@ def _late_signal(inc, kind: str):
     # on a service that calls it, so it passes the shared-context gate.
     victim = next((s.service for s in inc.cluster.signals if s.service != inc.causal.root_cause_service),
                   inc.causal.root_cause_service)
+    # ...and it repeats its own error, so the wording matches what the incident
+    # already holds for that service (a same-service signal with nothing else in
+    # common is deliberately not enough to join).
+    own = [m.message for m in inc.cluster.signals if m.service == victim and m.message]
     root = inc.causal.root_cause_signal
-    message = (root.message if root else "still failing")[:80]
+    message = (own[0] if own else (root.message if root else "still failing"))[:80]
     sigs = adapters.from_cloudwatch_logs({
         "logGroupName": f"/aws/ecs/{victim}",
         "events": [{"timestamp": int(at.timestamp() * 1000),
-                    "message": f"ERROR still failing after recovery attempt: {message}",
+                    "message": f"ERROR {message}",
                     "logStreamName": f"{victim}/task/late01"}],
     })
     return sigs[0] if sigs else None

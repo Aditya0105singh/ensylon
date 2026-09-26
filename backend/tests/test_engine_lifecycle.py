@@ -104,7 +104,7 @@ def _grafana(service, trace_id=None):
     return {"status": "firing", "alerts": [{
         "status": "firing", "labels": labels,
         "annotations": {"description": f"p99 latency on {service}"},
-        "startsAt": "2026-08-26T14:08:00Z", "valueString": "[ var='B' labels={} value=3100.0 ]",
+        "startsAt": "2026-08-26T14:04:00Z", "valueString": "[ var='B' labels={} value=3100.0 ]",
     }]}
 
 

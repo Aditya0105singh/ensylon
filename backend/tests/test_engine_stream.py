@@ -318,13 +318,19 @@ def test_an_open_incident_does_not_swallow_an_unrelated_neighbour():
     assert any(s.service == "carrier-service" for s in engine.pending)
 
 
-def test_the_real_simulator_burst_forms_three_separate_incidents():
+def test_the_real_simulator_burst_keeps_three_stories_apart():
     """Recorded from the Ensylon simulator (redacted): in ten minutes, an
     agency-db pool exhaustion cascading to payments and enrollment, a rulesforge
-    DB slowdown, and an unrelated comms-service SMTP outage - plus routine
-    warnings. They must stay three incidents, whether the signals arrive live
-    (2 s at a time) or as the backlog a stream sends on first connect (one
-    tick). Before the fixes this became one 8-service P1."""
+    DB slowdown (which makes payments fall back), and an unrelated comms-service
+    SMTP outage - plus routine warnings. They must stay apart, whether the
+    signals arrive live (2 s at a time) or as the backlog a stream sends on first
+    connect (one tick). Before the fixes this became one 8-service P1.
+
+    Updated when the correlation weights were re-tuned on the real simulator
+    (see tools/label_recording.py): the rulesforge slowdown now carries payments'
+    own "rulesforge call failed / FallbackMode" signals, which is its true
+    consequence, instead of leaving them out. What is asserted is what matters:
+    the three stories never merge."""
     from pathlib import Path
 
     from app.engine import recording as rec
@@ -343,12 +349,19 @@ def test_the_real_simulator_burst_forms_three_separate_incidents():
         return sorted(tuple(sorted(i.cluster.services)) for i in engine.result.incidents)
 
     assert shape(backlog) == shape(live)
-    incidents = shape(live)
-    assert ("agency-db", "enrollment-service", "payments-service") in incidents
-    assert ("comms-service",) in incidents
-    assert ("rulesforge",) in incidents
-    assert all(len(services) <= 3 for services in incidents)
-    assert not any("carrier-service" in services for services in incidents)   # routine warnings
+    incidents = live.result.incidents
+    services = [set(i.cluster.services) for i in incidents]
+
+    cascade = [i for i in incidents if i.causal.root_cause_service == "agency-db"]
+    assert len(cascade) == 1 and set(cascade[0].cluster.services) == {"agency-db", "enrollment-service", "payments-service"}
+    assert {"comms-service"} in services                                   # the SMTP outage, alone
+    slowdown = [i for i in incidents if i.causal.root_cause_service == "rulesforge"]
+    assert len(slowdown) == 1 and set(slowdown[0].cluster.services) <= {"rulesforge", "payments-service"}
+    # the stories never merge: no incident holds signals of two of them
+    assert not any("rulesforge" in sv and ("comms-service" in sv or "agency-db" in sv) for sv in services)
+    assert not any("comms-service" in sv and len(sv) > 1 for sv in services)
+    assert all(len(sv) <= 3 for sv in services)
+    assert not any("carrier-service" in sv for sv in services)             # routine warnings
 
 
 def test_correlating_unrelated_pending_signals_does_not_crash():

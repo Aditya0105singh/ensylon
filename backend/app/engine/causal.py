@@ -54,7 +54,7 @@ W_EVIDENCE = 0.30
 # A dependent counts as reached by a candidate only if it did not start failing
 # more than this long *before* the candidate did (staggered arrival across three
 # streams makes a small lead normal; tens of minutes is not).
-PRECEDENCE_TOLERANCE_S = 600.0
+PRECEDENCE_TOLERANCE_S = 300.0
 
 
 @dataclass

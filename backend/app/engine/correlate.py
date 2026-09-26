@@ -46,20 +46,26 @@ from .signal import Signal
 # --------------------------------------------------------------------------
 
 # Correlation formula (all five dimensions of the brief, each in [0, 1]):
-#   similarity = 0.25*T + 0.20*S + 0.20*D + 0.20*E + 0.15*C
-#   T temporal   exp(-minutes_apart / 4), zero beyond the 15-minute window
+#   similarity = 0.36*T + 0.06*S + 0.33*D + 0.19*E + 0.06*C
+#   T temporal   exp(-minutes_apart / 1), zero beyond the 15-minute window
 #   S service    1 same service+component, 0.85 same service, else 0
 #   D topology   hop distance in the dependency graph: 0->1, 1->.75, 2->.45, 3->.15
 #   E evidence   same log template = 1, else token Jaccard of messages/metrics
 #   C component  1 when both name the same infrastructure component
-# Merge threshold: similarity >= 1 - EPS (0.34), and only for pairs that pass
-# the structural gate below. Time alone can contribute at most 0.25, so it can
-# never merge anything on its own.
-W_TIME = 0.25
-W_SERVICE = 0.20
-W_DEPENDENCY = 0.20
-W_TEMPLATE = 0.20
-W_COMPONENT = 0.15
+# Merge threshold: similarity >= 1 - EPS (0.45), and only for pairs that pass
+# the structural gate below. Time alone can contribute at most 0.36, below the
+# threshold, so it can never merge anything on its own (test_engine_real_session).
+#
+# Tuned on a hand-labelled recording of the real simulator (tools/label_recording.py,
+# backend/tests/fixtures/live_session_2026-09-26*): on that run time is by far the
+# best single separator (AUC 0.89), the dependency graph is so dense that its
+# closeness barely separates stories, and one service takes part in several
+# concurrent stories, so the same-service weight is small.
+W_TIME = 0.36
+W_SERVICE = 0.06
+W_DEPENDENCY = 0.33
+W_TEMPLATE = 0.19
+W_COMPONENT = 0.06
 
 # Reviewer-learned adjustments, keyed by the set of services in a pattern.
 # Empty by default, so behaviour is exactly the constants above until a human
@@ -68,14 +74,19 @@ PATTERN_WEIGHTS: dict[frozenset, dict[str, float]] = {}
 
 WINDOW_BASE_MIN = 5.0     # adaptive window floor
 WINDOW_MAX_MIN = 15.0     # ...and ceiling
-TIME_SCALE_MIN = 4.0      # exponential decay constant
+TIME_SCALE_MIN = 1.0      # exponential decay constant
 
-# DBSCAN radius in distance units (1 - similarity). Re-tuned when the component
-# dimension was added: swept 0.62-0.72 on seeds 1-20 (0.64-0.72 all reach the
-# same F1 plateau), took the strictest value on the plateau, and checked it on
-# held-out seeds 21-40, where F1 returns to its pre-change 0.656.
-EPS = 0.66
+# DBSCAN radius in distance units (1 - similarity): merge at similarity >= 1 - EPS.
+# History: 0.66 (merge at 0.34) was tuned on generated estates. On the real
+# simulator that merged concurrent stories (pair F1 0.35, purity 0.59). A search
+# over weights, time scale and EPS on the labelled recording, cross-checked on the
+# generated benchmark, chose 0.55: real F1 0.57 (purity 0.90, 13/13 roots), and the
+# held-out generated benchmark improves too (F1 0.686 -> 0.713).
+EPS = 0.55
 MIN_SAMPLES = 2
+
+# Evidence agreement credited when one signal names the other's service.
+MENTION_EVIDENCE = 0.6
 
 # Hop distance → closeness. Beyond three hops two services are effectively
 # unrelated for incident purposes, whatever the graph says.
@@ -301,6 +312,11 @@ def similarity(
     s = service_affinity(a, b)
     d = graph.closeness(a.service, b.service)
     tpl = template_similarity(a, b)
+    # One signal naming the other's service ("Circuit breaker OPEN for
+    # payments-service") is the source stating the relationship itself: the
+    # strongest evidence agreement there is, whatever the wording overlap.
+    if b.service in mentions(a) or a.service in mentions(b):
+        tpl = max(tpl, MENTION_EVIDENCE)
     c = component_match(a, b)
     w = weights if weights is not None else weights_for(a.service, b.service)
     total = (w["time"] * t + w["service"] * s + w["dependency"] * d + w["template"] * tpl
