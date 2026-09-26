@@ -5,7 +5,6 @@ export default function Page() {
 }
 
 export const metadata = {
-  title: "Review Queue | Nexus AIOps",
-  description:
-    "Ingest -> Detect -> Correlate -> Causal Engine -> Score -> Draft -> Human Review Gate, running for real.",
+  title: "Incidents & Review | Nexus AIOps",
+  description: "Every incident the engine raised, most urgent first, waiting for a named reviewer to sign off.",
 };
