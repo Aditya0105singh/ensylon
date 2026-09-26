@@ -149,8 +149,9 @@ with `--turbopack`, and a real `node_modules` (not a symlink/junction).
 - **Structural gate before scoring.** Two signals are only compared if they share a service, a graph edge
   within 2 hops, a component within 2 hops, or one names the other's service in its evidence.
   This is how we obey "time alone is not correlation".
-- **Five dimensions, explicit weights** (T .25, S .20, D .20, E .20, C .15), merge threshold 0.34.
-  Weights were tuned on seeds 1-20 and reported on held-out seeds 21-40 (F1 0.658, root cause 0.965).
+- **Five dimensions, explicit weights** (T .36, S .06, D .33, E .19, C .06), merge threshold 0.45.
+  Tuned on a hand-labelled recording of the real simulator (pair F1 0.35 to 0.57, purity 0.59 to 0.90, 13 of 13 root causes)
+  and checked on generated estates (held-out F1 0.686 to 0.713, root cause 0.974). Time alone can never merge (max 0.36 < 0.45).
 - **Causal refinement** splits two independent roots whose evidence disagrees, keeps a cascade whole.
 - **Validation is separate from scoring.** Four checks decide whether a candidate is raised at all.
 - **Severity and confidence are two numbers, never blended.** Severity = blast radius, service criticality,

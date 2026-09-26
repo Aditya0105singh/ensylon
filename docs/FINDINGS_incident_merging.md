@@ -1,5 +1,7 @@
 # Finding: separate stories merge into one long incident on real data
 
+**Status: resolved for the large cases (2026-09-26, second pass). See "Resolution" at the bottom.**
+
 Found 2026-09-26 by replaying the real simulator recording (`recordings/session-*.jsonl`) through the engine.
 Reproduce with any recording: feed `recording.load(path).signals` to a `StreamEngine` via `recording.fast_forward`.
 
@@ -24,9 +26,11 @@ incident is bad for a reviewer: one ticket, one root cause, several real problem
 **Wrong root cause.** The merged incident named `comms-service` as root cause, although carrier-service (which calls it)
 failed 18 minutes before comms-service did. Two rules ignored time: a failing callee made its caller a "symptom", and
 dependents counted toward reach whatever their onset. Now a dependency only explains a service if it failed no more than
-10 minutes after it, and a dependent only counts toward reach if it did not fail more than 10 minutes before the
-candidate (`causal.PRECEDENCE_TOLERANCE_S`). Held-out benchmark unchanged (F1 0.686, root cause 0.969). Tolerances of
-3 and 5 minutes cost 0.9 points of root-cause accuracy, so 10 minutes was chosen. Tests: `test_engine_causal_order.py`.
+5 minutes after it, and a dependent only counts toward reach if it did not fail more than 5 minutes before the
+candidate (`causal.PRECEDENCE_TOLERANCE_S`). First set to 10 minutes, which kept the generated benchmark unchanged
+(root cause 0.969; 3 minutes cost 0.9 points). After the weights were re-tuned (second pass below) 10 minutes got 1 of
+11 real roots wrong and 5 minutes got all 11, with the benchmark still fine, so it is now 5.
+Tests: `test_engine_causal_order.py`.
 
 ## Not fixed — needs a decision and ground truth
 
@@ -52,3 +56,62 @@ re-run the strict-corroboration variant against it. Options to try, best guess f
 3. Cap incident duration for auto-extension (a signal more than N minutes after the last one starts a new incident).
 
 Until then, treat any incident spanning more than ~20 minutes or more than 5 services as "review for merged stories".
+
+
+---
+
+## Resolution (second pass)
+
+We built ground truth instead of guessing. `tools/label_recording.py` labels a recording with the incident each signal
+belongs to, using readable keyword rules per simulator scenario; `backend/app/engine/groundtruth.py` scores the
+engine's incidents against it (pair precision/recall/F1, purity, completeness, root cause). Fixture and labels:
+`backend/tests/fixtures/live_session_2026-09-26.*`. Reproduce: `python tools/eval_recording.py <recording> <labels>`.
+
+**What the real data showed** (1,307 signals, 17 true incidents, seven overlapping scenarios plus decoys). On the
+original weights the engine scored **pair F1 0.347, purity 0.59**. Over 4,000+ same-window pairs:
+
+| dimension | separates same-story from different-story pairs (AUC) |
+|---|---|
+| time | **0.89** |
+| same service | 0.69 |
+| dependency closeness | 0.68 (the 12-service graph is dense; almost everything is one hop apart) |
+| wording (template / token overlap) | 0.58 (0.55 with IDF weighting, so that was not the answer) |
+| component | 0.58 |
+
+and one service takes part in several concurrent stories (payments-service in four), so "same service" links unrelated
+incidents.
+
+**What changed**
+1. Weights re-tuned on the labelled run (random search then hill-climb), then cross-checked on the generated benchmark:
+   time 0.36, service 0.06, dependency 0.33, evidence 0.19, component 0.06; time scale 1 min; merge threshold 0.45.
+   Time's maximum contribution (0.36) stays below the threshold, so time alone still cannot merge two signals (tested).
+2. A signal that names another service ("Circuit breaker OPEN for payments-service") now earns at least 0.6 evidence
+   agreement, not only a pass through the gate. The full 1.0 hurt real precision; 0.6 is the largest value that leaves
+   the real-data metrics unchanged.
+3. Causal precedence (first pass): a cause cannot fail more than 5 minutes after the services it broke.
+4. Late signals are held to the same threshold; the demo helpers and two tests were updated to model a genuine late
+   arrival (close in time, repeating the victim's own error).
+
+**Result** (real / generated held-out):
+
+| | before | after |
+|---|---|---|
+| real pair F1 | 0.347 | **0.571** |
+| real purity | 0.59 | **0.90** |
+| real root cause (incidents dominated by one story) | 6/6 | **13/13** |
+| generated F1 | 0.686 | **0.713** |
+| generated root cause | 0.969 | 0.974 |
+
+**Tried and rejected:** requiring corroboration for every dependency-only link (F1 0.686 to 0.602 on generated data, 9
+tests broke); the same only beyond 5 minutes (no effect on the real case); IDF-weighted text similarity (no better than
+the current wording term); a wider window for late attachment (chain is continuous, not a time gap).
+
+**Still open**
+- Grafana evaluates every rule at the same instant, so alerts of unrelated stories arrive together with no wording in
+  common. That leaves one small mixed fragment (8 signals, 5 stories). Needs semantic similarity (embeddings) or per-rule
+  metadata; not attempted.
+- Stories can be split into several incidents (completeness 0.65, unchanged). A merge-by-root step for incidents that
+  share a root cause and are close in time is the obvious next experiment.
+- The labels are our reading of the wording, not the organisers' key. Ask the organisers whether one exists.
+- The weights are tuned on one 3-hour recording. Re-run the search on a second recording before trusting them for the
+  final run (`tools/label_recording.py` then `tools/eval_recording.py`).

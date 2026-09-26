@@ -13,8 +13,8 @@ and drop the JSON in `backend/tests/fixtures/` so both sides test against the sa
 
 **`GET /engine/config`** (I) — the page never hard-codes a constant
 ```json
-{ "weights": {"time":0.25,"service":0.20,"dependency":0.20,"template":0.20,"component":0.15},
-  "merge_threshold": 0.34, "window_minutes": {"base":5,"max":15}, "time_scale_minutes": 4,
+{ "weights": {"time":0.36,"service":0.06,"dependency":0.33,"template":0.19,"component":0.06},
+  "merge_threshold": 0.45, "window_minutes": {"base":5,"max":15}, "time_scale_minutes": 1,
   "hop_closeness": {"0":1.0,"1":0.75,"2":0.45,"3":0.15},
   "anomaly": {"z_threshold":3.0,"min_incident_score":0.60,"ewma_alpha":0.3},
   "severity": {"weights":{"blast":0.40,"criticality":0.35,"magnitude":0.25},"bands":{"P1":75,"P2":50,"P3":25}},
@@ -27,9 +27,9 @@ and drop the JSON in `backend/tests/fixtures/` so both sides test against the sa
 ```json
 { "gate": {"passed":true,"reason":"direct dependency edge","hops":1},
   "components": {"time":0.98,"service":0.0,"dependency":0.75,"template":0.29,"component":1.0},
-  "weights": {"time":0.25,"service":0.20,"dependency":0.20,"template":0.20,"component":0.15},
-  "contributions": {"time":0.245,"service":0.0,"dependency":0.15,"template":0.057,"component":0.15},
-  "total": 0.60, "merge_threshold": 0.34, "merged": true }
+  "weights": {"time":0.36,"service":0.06,"dependency":0.33,"template":0.19,"component":0.06},
+  "contributions": {"time":0.353,"service":0.0,"dependency":0.248,"template":0.055,"component":0.06},
+  "total": 0.72, "merge_threshold": 0.45, "merged": true }
 ```
 
 **`GET /engine/stream/events?limit=50`** (P) — Overview activity ticker

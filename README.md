@@ -124,8 +124,17 @@ The live run keeps a recording of what the streams sent, as JSON lines in `recor
 - **Redaction before anything is stored:**
   - Covers emails, IPv4/IPv6 (private too), `sess_…` sessions, `ACC-…` / account ids, 12-digit cloud
     account ids, service accounts, phone numbers, and personal names.
-  - Names are caught three ways: cue words ("customer Priya Sharma"), title bigrams, and names learned from `first.last@` emails.
-    Learned names are stored only as SHA-256 hashes.
+  - Names are caught three ways: cue words ("customer Priya Sharma"), a gazetteer of common first names for uncued
+    pairs ("SMS fallback for Rohan Mehta"; also `PRIYA SHARMA`, `O'Brien`, `Sharma, Priya`), and names learned from
+    `first.last@` emails. Learned names are stored only as SHA-256 hashes.
+  - A reviewer's edit is redacted too before it is stored.
+- **Redaction is tested, not assumed** (`backend/tests/`):
+  - `test_pii_redaction.py`: a 75-case corpus of PII in realistic shapes with evidence that must survive. 100% recall on
+    74 planted values; 0 of 39 evidence values (services, hosts, metrics, ids) wrongly redacted; 0 of 887 distinct real
+    recorded evidence texts change under the rules.
+  - `test_pii_leak_scan.py`: plants PII in all three stream formats, runs the production path (reader, parser, engine,
+    draft, human edit, approval, ticket files, recording), then scans every artefact and the log output. Any survivor fails.
+  - Known limit (a strict xfail): an uncommon name with no cue word and no earlier email is not caught.
   - Structured fields (`user:`, `ip:`, `acc:`, `accountId`, `serviceAccount`, …) are redacted by field
     meaning. Internal hostnames are kept because they carry the environment.
 - **Canonical schema:** every signal is also emitted as a canonical record:
@@ -151,19 +160,25 @@ The live run keeps a recording of what the streams sent, as JSON lines in `recor
    - a direct dependency edge on the reference graph (one hop; two hops count only with a shared component, below);
    - one signal names the other's service in its evidence (for example "Circuit breaker OPEN for payments-service");
    - same component, at most 2 hops apart.
-2. **Similarity:** `sim = 0.25·T + 0.20·S + 0.20·D + 0.20·E + 0.15·C`, where:
-   - T = `exp(−Δt/4 min)`, and 0 beyond the 15-minute window;
+2. **Similarity:** `sim = 0.36·T + 0.06·S + 0.33·D + 0.19·E + 0.06·C`, where:
+   - T = `exp(−Δt/1 min)`, and 0 beyond the 15-minute window;
    - S = same service (1.0 with the same component, 0.85 otherwise);
    - D = hop closeness (0→1.0, 1→0.75, 2→0.45, 3→0.15);
-   - E = Drain3 template match, else token Jaccard on redacted text;
+   - E = Drain3 template match, else token Jaccard on redacted text; at least 0.6 when one signal names the
+     other's service ("Circuit breaker OPEN for payments-service");
    - C = same component.
-3. **Merge threshold:** `sim ≥ 0.34`, via DBSCAN on `1 − sim` with eps = 0.66 and min_samples = 2.
-   Tuned on seeds 1–20 and reported on held-out seeds 21–40.
+3. **Merge threshold:** `sim ≥ 0.45`, via DBSCAN on `1 − sim` with eps = 0.55 and min_samples = 2.
+   Time's largest possible contribution (0.36) is below the threshold, so time alone can never merge two signals
+   (asserted in `test_engine_real_session.py`).
+   **Tuned on the real simulator**, not on generated estates: on a hand-labelled recording, time is the best single
+   separator (AUC 0.89), the 12-service graph is so dense that dependency closeness barely separates stories (0.68),
+   and one service takes part in several concurrent stories (payments in four), so same-service is weighted low.
+   See *Evaluation* and `docs/FINDINGS_incident_merging.md`.
 4. **Causal refinement.** Counterfactual root-cause analysis on the graph. Two independent roots whose evidence
    disagrees are split into two incidents. A cascade keeps one root.
 5. **Streaming behaviour** (`stream.py`, `lifecycle.py`):
    - A new anomalous signal first tries to join an **open** incident. It must pass the same gate **and** reach the
-     merge threshold (sim ≥ 0.34) with a member, exactly as two signals must to merge. The gate alone is not
+     merge threshold (sim ≥ 0.45) with a member, exactly as two signals must to merge. The gate alone is not
      enough: an open incident would grow one dependency hop at a time and absorb unrelated failures nearby.
    - Otherwise it waits in a pending pool.
    - Pending signals with no structural partner after 15 minutes of stream time expire as noise.
@@ -218,14 +233,35 @@ generated estates with injected incidents. Held-out seeds 21–40, 80 runs:
 
 | | pair precision | pair recall | pair F1 | root-cause accuracy |
 |---|---|---|---|---|
-| overall | 0.636 | 0.837 | **0.686** | **0.969** |
+| overall | 0.731 | 0.796 | **0.713** | **0.974** |
 
-Precision rose from 0.590 to 0.636 (F1 0.658 → 0.686) with recall unchanged, after fixes found on the live
-simulator: an INFO line is never a burst, a new warning cannot anchor an incident, and a cluster needs
-independent evidence (validation check 5).
+(Before the real-data re-tuning: precision 0.636, recall 0.837, F1 0.686, root cause 0.969.)
 
 Generated data is used only for this measurement (`GET /engine/benchmark`, the Evaluation page). It never
 enters the live engine.
+
+### On the real simulator
+
+Generated estates are not the estate we are judged on, so correlation is also scored against **hand-labelled ground
+truth from a recorded run of the real simulator** (1,307 signals, 17 true incidents, 74 decoy warnings):
+`backend/tests/fixtures/live_session_2026-09-26.*`, labeller `tools/label_recording.py` (readable keyword rules per
+scenario), scorer `tools/eval_recording.py`, regression test `test_engine_real_session.py`.
+The simulator runs seven overlapping scenarios (carrier-service memory leak, payments config deploy, external CDN latency,
+rulesforge batch job, agency-db pool exhaustion, rulesforge slow query, comms SMTP outage) plus decoys.
+
+| | before re-tuning | now |
+|---|---|---|
+| pair F1 / precision / recall | 0.347 / 0.359 / 0.336 | **0.571 / 0.843 / 0.432** |
+| purity (share of an incident's signals in its main story) | 0.59 | **0.90** |
+| completeness (share of a story held by one incident) | 0.65 | 0.65 |
+| incidents raised for 17 true stories | 9 | 14 |
+| root cause correct, incidents dominated by one story | 6 of 6 | **13 of 13** |
+| generated-benchmark F1 (held-out) | 0.686 | **0.713** |
+
+Known limits: (1) Grafana evaluates all its rules at one instant, so alerts of unrelated stories arrive together with
+no wording in common; that leaves one small mixed fragment (8 signals). (2) A story can be split into several incidents
+(completeness 0.65). (3) The labels are our own reading of the wording, not the organisers' answer key; signals that were
+genuinely ambiguous are left out of scoring.
 
 ## Repository layout
 
