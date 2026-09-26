@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   Badge,
   Button,
@@ -613,6 +613,16 @@ export default function ReviewPage() {
   const [tab, setTab] = useState<DraftStatus>("awaiting_review");
   const [actor, setActor] = useState("");
 
+  // The bell (Topbar) links here with #review-queue. Next.js's own hash
+  // scroll only fires for elements present at the very first paint; this is
+  // a client component that renders after hydration, so that race silently
+  // drops the scroll. Doing it ourselves, on mount, is reliable either way.
+  useEffect(() => {
+    if (window.location.hash === "#review-queue") {
+      document.getElementById("review-queue")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  }, []);
+
   const filtered = useMemo(
     () => (queue ?? []).filter((i) => i.status === tab),
     [queue, tab]
@@ -625,7 +635,7 @@ export default function ReviewPage() {
       <PipelineStagesSection queue={queue ?? []} />
       <ReportSummary />
 
-      <div className="rounded-xl border border-amber-200 bg-amber-50 p-3.5">
+      <div id="review-queue" className="rounded-xl border border-amber-200 bg-amber-50 p-3.5 scroll-mt-20">
         <div className="flex flex-wrap items-center gap-2">
           <HiOutlineShieldCheck className="text-amber-600 shrink-0" size={17} />
           <Text className="text-sm text-amber-800">

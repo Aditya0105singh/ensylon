@@ -76,7 +76,8 @@ export function Topbar({ session }: { session: Session | null }) {
         </Link>
 
         <Link
-          href="/review"
+          href="/review#review-queue"
+          scroll={false}
           className="relative flex items-center justify-center w-10 h-10 rounded-full border border-gray-200 bg-white text-gray-500 shadow-sm hover:shadow-md hover:text-green-700 hover:border-green-200 transition-all"
           title={`${bellCount} incident draft(s) awaiting human review`}
         >
