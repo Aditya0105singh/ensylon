@@ -50,6 +50,12 @@ W_TEMPORAL = 0.30
 W_DEPENDENCY = 0.40
 W_EVIDENCE = 0.30
 
+# A cause cannot fail long after the services it is said to have broken.
+# A dependent counts as reached by a candidate only if it did not start failing
+# more than this long *before* the candidate did (staggered arrival across three
+# streams makes a small lead normal; tens of minutes is not).
+PRECEDENCE_TOLERANCE_S = 600.0
+
 
 @dataclass
 class CandidateScore:
@@ -144,13 +150,24 @@ def _dependents(graph: DependencyGraph, service: str) -> set[str]:
 
 
 def dependency_reach(
-    service: str, affected: set[str], graph: DependencyGraph
+    service: str,
+    affected: set[str],
+    graph: DependencyGraph,
+    onsets: dict[str, datetime] | None = None,
 ) -> tuple[float, set[str]]:
-    """How much of the observed damage is downstream of this candidate."""
+    """How much of the observed damage is downstream of this candidate.
+
+    With `onsets`, only dependents that did not fail well *before* the candidate
+    count: a callee that first fails 30 minutes after its caller cannot be why
+    the caller failed, however the graph is wired.
+    """
     others = affected - {service}
     if not others:
         return 1.0, set()
     reached = _dependents(graph, service) & others
+    if onsets and service in onsets:
+        floor = onsets[service].timestamp() - PRECEDENCE_TOLERANCE_S
+        reached = {d for d in reached if d not in onsets or onsets[d].timestamp() >= floor}
     return len(reached) / len(others), reached
 
 
@@ -247,13 +264,18 @@ def analyse(cluster: Cluster, graph: DependencyGraph) -> CausalResult:
     for service in candidates:
         signals = by_service[service]
         temporal = temporal_precedence(service, onsets)
-        reach, reached = dependency_reach(service, affected, graph)
+        reach, reached = dependency_reach(service, affected, graph, onsets)
         strength, families = evidence_strength(signals)
 
         # Pass 4 — cause vs symptom. A service whose own dependency is also
         # failing inside this cluster is downstream of the real problem.
+        # A dependency only explains this service if it failed first (within the
+        # staggering tolerance): a callee that starts failing long afterwards is
+        # a consequence or a separate fault, not the reason this service broke.
+        ceiling = onsets[service].timestamp() + PRECEDENCE_TOLERANCE_S
         failing_deps = sorted(
-            dep for dep in graph.graph.successors(service) if dep in affected
+            dep for dep in graph.graph.successors(service)
+            if dep in affected and onsets[dep].timestamp() <= ceiling
         ) if service in graph.graph else []
 
         survived, unique = ablation_test(service, candidates, affected, graph)
