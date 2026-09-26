@@ -55,5 +55,15 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger Render redeploy
-        if: ${{ secrets.RENDER_DEPLOY_HOOK_URL != '' }}
-        run: curl -fsS -X POST "${{ secrets.RENDER_DEPLOY_HOOK_URL }}"
+        # `secrets` isn't in the allowed context list for a step `if:` at
+        # all - referencing it there doesn't just skip the step, it makes
+        # the whole workflow file invalid (0 jobs, instant failure). Check
+        # it inside the shell instead, where it's a normal env var.
+        env:
+          HOOK_URL: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+        run: |
+          if [ -n "$HOOK_URL" ]; then
+            curl -fsS -X POST "$HOOK_URL"
+          else
+            echo "RENDER_DEPLOY_HOOK_URL not set yet - skipping (expected until the Render service exists)."
+          fi
