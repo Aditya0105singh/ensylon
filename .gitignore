@@ -38,3 +38,6 @@ frontend.zip
 
 # Approved tickets are run output, not source
 output/
+
+# Redacted stream recordings (resume/replay); session data, not source
+recordings/

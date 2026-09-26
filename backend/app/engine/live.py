@@ -8,6 +8,10 @@ A ticker thread runs StreamEngine.tick() every TICK_SECONDS.
 
 Inputs, per the challenge rules: the three streams, plus the service
 dependency graph from the reference endpoint. Nothing else.
+
+Every handled event is also recorded, already redacted (see recording.py), so
+a restart resumes where it left off and a quiet simulator can be demonstrated
+with a clearly labelled replay of what the streams sent earlier.
 """
 
 from __future__ import annotations
@@ -18,11 +22,14 @@ import os
 import threading
 import time
 from dataclasses import dataclass, field
+from datetime import datetime
+from pathlib import Path
 from typing import Any, Callable, Iterator
 
 import httpx
 
 from . import claude_drafting
+from . import recording as rec
 from .correlate import DependencyGraph
 from .drafting import apply_claude
 from .nexus import from_cloudwatch, from_grafana, parse_log_line
@@ -40,6 +47,15 @@ STREAMS = {
 GRAPH_PATH = "/sim/reference/service-dependency-graph"
 TICK_SECONDS = float(os.getenv("STREAM_TICK_SECONDS", "2"))
 BACKOFF_MAX = 30.0
+
+# Recording is on for a live run; resume rebuilds state from it after a restart.
+RECORD = os.getenv("NEXUS_RECORD", "1") != "0"
+RESUME = os.getenv("NEXUS_RESUME", "1") != "0"
+# Replay a recording instead of connecting: a path, or "latest".
+REPLAY = os.getenv("NEXUS_REPLAY", "").strip()
+REPLAY_SPEED = max(0.1, float(os.getenv("REPLAY_SPEED", "1")))
+# Where playback starts: "busiest" (just before the busiest stretch), "start", or an ISO time.
+REPLAY_FROM = os.getenv("REPLAY_FROM", "busiest").strip()
 
 # From the problem statement (0-100); unknown services default to 50.
 CRITICALITY_0_100 = {
@@ -187,6 +203,7 @@ class StreamReader(threading.Thread):
         self.known = known
         self.stop_event = stop
         self.status = StreamStatus(name=name, source=STREAMS[name])
+        self.recorder: rec.Recorder | None = None
 
     def _comment(self, text: str) -> None:
         self.status.last_heard = time.time()
@@ -232,17 +249,112 @@ class StreamReader(threading.Thread):
         except Exception:
             # Payload is never logged: it may carry PII before redaction.
             self.status.parse_errors += 1
+            self._record(ev.id, None, "error")
             return
         if signal is None:
             self.status.skipped += 1
+            self._record(ev.id, None, "skipped")
             return
         self.status.signals += 1
+        # Recorded before the engine sees it: the Signal is already redacted
+        # and not yet scored, exactly what a replay or resume needs to feed back.
+        self._record(ev.id, signal, "signal")
         self.engine.offer(signal)
+
+    def _record(self, event_id: str | None, signal: Signal | None, outcome: str) -> None:
+        if self.recorder is None:
+            return
+        try:
+            self.recorder.record(self.stream, event_id, signal, outcome)
+        except Exception:
+            log.exception("could not record an event; ingestion continues")
+
+    def restore(self, last_id: str | None, counts: dict[str, int]) -> None:
+        """Carry counters and the resume point over from a recording."""
+        self.status.last_event_id = last_id
+        for key, value in counts.items():
+            setattr(self.status, key, getattr(self.status, key) + value)
 
 
 # --------------------------------------------------------------------------
 # Claude narration, off the ingest path
 # --------------------------------------------------------------------------
+
+
+class ReplayReader(threading.Thread):
+    """Plays a recording into the engine in place of the three live streams.
+
+    Everything before the start point is fast-forwarded (so detector baselines
+    and earlier incidents exist, exactly as they did live); from there, signals
+    arrive in their recorded order, paced by their event-time gaps / speed,
+    with long silences shortened to REPLAY_MAX_GAP_SECONDS.
+    """
+
+    def __init__(self, runtime: "LiveRuntime", recording: rec.Recording, readers: dict[str, "StreamReader"],
+                 speed: float, start_at: datetime | None) -> None:
+        super().__init__(name="replay", daemon=True)
+        self.runtime, self.recording, self.readers = runtime, recording, readers
+        self.speed, self.start_at = speed, start_at
+        self.played = 0
+        self.total = sum(1 for e in recording.events if e.signal is not None)
+        self.finished = False
+
+    def run(self) -> None:
+        events = self.recording.events
+        first = 0
+        if self.start_at is not None:
+            while first < len(events) and (events[first].signal is None or events[first].signal.timestamp < self.start_at):
+                first += 1
+        warm = [e.signal for e in events[:first] if e.signal is not None]
+        with self.runtime.lock:
+            rec.fast_forward(self.runtime.engine, warm, TICK_SECONDS)
+        for e in events[:first]:
+            self._count(e)
+        self.played = len(warm)
+
+        prev: datetime | None = None
+        for e in events[first:]:
+            if self.runtime.stop_event.is_set():
+                return
+            if e.signal is not None:
+                if prev is not None:
+                    gap = (e.signal.timestamp - prev).total_seconds()
+                    gap = min(max(gap, 0.0), rec.REPLAY_MAX_GAP_SECONDS) / self.speed
+                    if gap > 0 and self.runtime.stop_event.wait(gap):
+                        return
+                prev = e.signal.timestamp
+            self._count(e)
+            if e.signal is not None:
+                self.runtime.engine.offer(e.signal.model_copy(deep=True))
+                self.played += 1
+        self.finished = True
+
+    def _count(self, e: rec.RecordedEvent) -> None:
+        reader = self.readers.get(e.stream)
+        if reader is None:
+            return
+        st = reader.status
+        st.connected, st.last_heard = True, time.time()
+        st.events += 1
+        st.last_event_id = e.id or st.last_event_id
+        if e.outcome == "signal":
+            st.signals += 1
+        elif e.outcome == "skipped":
+            st.skipped += 1
+        elif e.outcome == "error":
+            st.parse_errors += 1
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "active": True,
+            "source": self.recording.path.name,
+            "recorded_at": self.recording.header.get("started_at"),
+            "speed": self.speed,
+            "from": self.start_at.isoformat() if self.start_at else None,
+            "played": self.played,
+            "total": self.total,
+            "finished": self.finished,
+        }
 
 
 class Narrator(threading.Thread):
@@ -312,20 +424,70 @@ class LiveRuntime:
     started_at: float | None = None
     on_tick: Callable[[dict[str, Any]], None] | None = None
     narrator: "Narrator | None" = None
+    recorder: rec.Recorder | None = None
+    replay: ReplayReader | None = None
+    resumed: dict[str, Any] | None = None
 
     def start(self, connect: bool = True) -> None:
         self.started_at = time.time()
         known = sorted(self.adjacency)
-        if connect:
-            for name in STREAMS:
-                reader = StreamReader(name, self.engine, known, self.stop_event)
-                self.readers.append(reader)
+        if connect and REPLAY:
+            self._start_replay(known)
+        elif connect:
+            readers = [StreamReader(name, self.engine, known, self.stop_event) for name in STREAMS]
+            self.readers.extend(readers)
+            self._resume_and_record(readers)
+            for reader in readers:
                 reader.start()
         if claude_drafting.enabled():
             self.narrator = Narrator(self.engine, self.lock, self.stop_event)
             self.narrator.start()
         self.ticker = threading.Thread(target=self._tick_loop, name="stream-ticker", daemon=True)
         self.ticker.start()
+
+    def _resume_and_record(self, readers: list[StreamReader]) -> None:
+        """Rebuild from this session's recording (if any), then keep recording to it."""
+        path = rec.resumable(BASE_URL) if RESUME else None
+        if path is not None:
+            try:
+                recording = rec.load(path)
+                with self.lock:
+                    rec.fast_forward(self.engine, recording.signals, TICK_SECONDS)
+                ids, counts = recording.last_ids(), recording.counts()
+                for r in readers:
+                    r.restore(ids.get(r.stream), counts.get(r.stream, {}))
+                self.resumed = {"source": path.name, "signals": len(recording.signals),
+                                "events": len(recording.events)}
+                log.info("resumed %d signals from %s", len(recording.signals), path.name)
+            except Exception:
+                log.exception("could not resume from %s; starting fresh", path)
+                path = None
+        if not RECORD:
+            return
+        try:
+            self.recorder = (rec.Recorder(path, BASE_URL, fresh=False) if path is not None
+                             else rec.Recorder.new_session(BASE_URL))
+        except Exception:
+            log.exception("could not open a recording; ingestion continues without one")
+            return
+        for r in readers:
+            r.recorder = self.recorder
+
+    def _start_replay(self, known: list[str]) -> None:
+        path = rec.latest() if REPLAY == "latest" else Path(REPLAY)
+        if path is None or not path.is_file():
+            raise FileNotFoundError(f"NEXUS_REPLAY: no recording at {REPLAY!r}")
+        recording = rec.load(path)
+        if REPLAY_FROM == "start":
+            start_at = None
+        elif REPLAY_FROM == "busiest":
+            start_at = rec.busiest_start(recording.signals)
+        else:
+            start_at = datetime.fromisoformat(REPLAY_FROM.replace("Z", "+00:00"))
+        readers = {name: StreamReader(name, self.engine, known, self.stop_event) for name in STREAMS}
+        self.readers.extend(readers.values())       # status holders only; never connected
+        self.replay = ReplayReader(self, recording, readers, REPLAY_SPEED, start_at)
+        self.replay.start()
 
     def _tick_loop(self) -> None:
         while not self.stop_event.wait(TICK_SECONDS):
@@ -343,6 +505,8 @@ class LiveRuntime:
 
     def stop(self) -> None:
         self.stop_event.set()
+        if self.recorder is not None:
+            self.recorder.close()
 
     def status(self) -> dict[str, Any]:
         return {
@@ -355,6 +519,9 @@ class LiveRuntime:
             "claude": {"enabled": self.narrator is not None, "model": claude_drafting.MODEL,
                        **(self.narrator.stats if self.narrator else {})},
             "engine": self.engine.status(),
+            "replay": self.replay.as_dict() if self.replay else {"active": False},
+            "resumed": self.resumed,
+            "recording": self.recorder.path.name if self.recorder else None,
         }
 
 
