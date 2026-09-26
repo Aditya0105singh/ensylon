@@ -1,6 +1,6 @@
 """VALIDATE - candidate clusters must earn acceptance as incidents (C4).
 
-Clustering proposes; validation decides. Four checks, each recorded on the
+Clustering proposes; validation decides. Five checks, each recorded on the
 cluster with a pass/fail and a reason so the reviewer sees why an incident
 exists (or why a candidate did not become one):
 
@@ -16,6 +16,12 @@ exists (or why a candidate did not become one):
      mostly a chain of single links is not one incident.
   4. Anomaly support. At least one signal must be clearly anomalous; a cluster
      assembled only from borderline signals is not raised.
+  5. Independent evidence. The signals must describe at least two distinct
+     conditions (service + source + log template or metric), unless the one
+     condition is itself an error or a firing alarm (a flapping alarm is still
+     one real incident). Ten copies of one warning on one service are one
+     observation repeated, not corroboration; on a cold start, when every
+     warning is "novel", this is what keeps a routine repeat from being raised.
 
 Correlation Confidence (0-1) is computed here too, separately from impact
 severity and never blended with it:
@@ -37,6 +43,7 @@ import networkx as nx
 
 from . import correlate as corr
 from .correlate import Cluster, DependencyGraph, component_match, similarity, template_similarity
+from .signal import Severity
 
 W_DENSITY = 0.40
 W_TOPOLOGY = 0.35
@@ -144,6 +151,32 @@ def _anomaly_support(cluster: Cluster) -> Check:
     return Check("anomaly support", ok, f"strongest anomaly score {top:.2f} (minimum {MIN_ANOMALY})")
 
 
+# A repeated error or firing alarm is evidence on its own; a repeated warning is not.
+_SELF_EVIDENT = {Severity.CRITICAL, Severity.HIGH}
+
+
+def _condition(s) -> tuple[str, str, str]:
+    """What a signal observed: where, from which stream, and which template or metric."""
+    source = str(getattr(s.source, "value", s.source))
+    return (s.service, source, s.template_id or s.metric or (s.message or "")[:60])
+
+
+def _independent_evidence(cluster: Cluster) -> Check:
+    conditions = {_condition(s) for s in cluster.signals}
+    if len(conditions) >= 2:
+        return Check("independent evidence", True, f"{len(conditions)} distinct conditions")
+    service = cluster.signals[0].service
+    if all(s.severity in _SELF_EVIDENT for s in cluster.signals):
+        return Check(
+            "independent evidence", True,
+            f"one condition on {service}, repeated {len(cluster.signals)}× at error/alarm severity",
+        )
+    return Check(
+        "independent evidence", False,
+        f"all {len(cluster.signals)} signals repeat one warning on {service}; a repeat is not corroboration",
+    )
+
+
 # --------------------------------------------------------------------------
 # confidence
 # --------------------------------------------------------------------------
@@ -207,7 +240,7 @@ def validate(clusters: list[Cluster], graph: DependencyGraph) -> Verdict:
             queue.extend((_as_cluster(g, cluster), history + [bridge]) for g in groups)
             continue
 
-        checks = history + [env, bridge, _coherence(links), _anomaly_support(cluster)]
+        checks = history + [env, bridge, _coherence(links), _anomaly_support(cluster), _independent_evidence(cluster)]
         # A split is recorded as a failed check on the parent, but the parts are
         # re-validated on their own merits; only the checks run on *this* set of
         # signals decide acceptance.

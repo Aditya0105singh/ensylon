@@ -314,6 +314,9 @@ class StreamEngine:
             "incidents": len(self.result.incidents),
             "noise": len(self.result.noise),
             "validation_rejections": len(self.rejections),
+            # PII tokens replaced, by kind (C1), and repeats folded before correlation.
+            "redactions": dict(self.report.redaction_counts),
+            "deduplicated": max(self.dedup_in - max(self.dedup_out, 0), 0),
             "ticks": self.ticks,
             "stream_clock": self.now().isoformat() if self._clock_event else None,
             "last_signal_seconds_ago": (round(time.time() - self.last_signal_wall, 1)

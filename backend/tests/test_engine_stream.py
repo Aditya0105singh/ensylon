@@ -111,6 +111,25 @@ def test_cascade_becomes_one_validated_incident_without_pii():
     for pii in ("neha", "priya", "10.0.", "sess_", "ACC-", "456789012345", "svc-payments@"):
         assert pii not in feed
 
+    # The Overview shows these counts as C1's proof: PII replaced, repeats folded.
+    status = engine.status()
+    assert sum(status["redactions"].values()) > 0
+    assert status["deduplicated"] >= 0
+
+
+def test_signals_route_can_return_anomalies_only(monkeypatch):
+    from types import SimpleNamespace
+
+    from app import engine_api
+
+    rows = [{"signal_id": "a", "anomaly_score": 0.1}, {"signal_id": "b", "anomaly_score": 0.9},
+            {"signal_id": "c", "anomaly_score": 0.6}]
+    monkeypatch.setattr(engine_api, "_live", SimpleNamespace(engine=SimpleNamespace(canonical=rows)))
+    out = engine_api.stream_signals(limit=10, min_score=0.6)
+    assert out["total"] == 2
+    assert [r["signal_id"] for r in out["signals"]] == ["c", "b"]      # newest first
+    assert engine_api.stream_signals(limit=10)["total"] == 3
+
 
 def test_late_signal_joins_the_open_incident():
     engine = _engine()
@@ -228,3 +247,45 @@ def test_repeats_collapse_across_batches_and_metrics_are_measured():
     assert sum(b["count"] for b in m["score_histogram"]) == 3
     assert sum(r.get("cloudwatch_metrics", 0) for r in m["timeline"]) == 3
     assert sum(r.get("anomalous", 0) for r in m["timeline"]) == 3
+
+
+def _log(i, severity, message, service="agency-gateway", template="T10"):
+    from datetime import datetime, timedelta, timezone
+
+    from app.engine.signal import Severity, Signal, SignalSource
+
+    return Signal(
+        id=f"s{i}", source=SignalSource.APP_LOG, service=service, component="api-handler",
+        environment="prod", severity=getattr(Severity, severity), message=message, template_id=template,
+        timestamp=datetime(2026, 9, 26, 10, 0, tzinfo=timezone.utc) + timedelta(minutes=i),
+        is_anomaly=True, anomaly_score=0.8,
+    )
+
+
+def test_repeats_of_one_warning_are_not_an_incident():
+    """Live false positive after a cold start: two "rate limit 86%" warnings
+    on agency-gateway became a P2 with confidence 1.00."""
+    from app.engine.correlate import Cluster
+    from app.engine.validate import validate
+
+    graph = graph_from_adjacency(FALLBACK_GRAPH)
+    warn = Cluster(cluster_id=0, signals=[_log(0, "WARNING", "Client approaching rate limit"),
+                                          _log(1, "WARNING", "Client approaching rate limit")])
+    verdict = validate([warn], graph)
+    assert verdict.accepted == []
+    failed = [c for c in verdict.rejected[0][1] if not c.passed]
+    assert [c.name for c in failed] == ["independent evidence"]
+
+    # The same shape at error severity is real (a flapping alarm, a repeating error).
+    err = Cluster(cluster_id=1, signals=[_log(0, "HIGH", "Connection pool exhausted", "payments-service", "T2"),
+                                         _log(1, "HIGH", "Connection pool exhausted", "payments-service", "T2")])
+    assert len(validate([err], graph).accepted) == 1
+
+    # Two different warnings on related services are independent evidence.
+    mixed = Cluster(cluster_id=2, signals=[_log(0, "WARNING", "Client approaching rate limit"),
+                                           _log(1, "WARNING", "Slow response from carrier gateway",
+                                                "carrier-service", "T12")])
+    from app.engine.validate import _independent_evidence
+
+    check = _independent_evidence(mixed)
+    assert check.passed and check.detail == "2 distinct conditions"

@@ -5,12 +5,15 @@ import { useApi } from "@/shared/lib/hooks/useApi";
 import type { CanonicalSignal, Evidence, QueueSummary } from "@/entities/engine/types";
 import { LiveOverviewClient } from "../../LiveOverviewClient";
 import {
+  anomalyFate,
   canonicalSource,
   classifySignal,
+  formatDuration,
   cleanTitle,
   correlationBreakdown,
   offset,
   propagationPath,
+  quietReason,
   rankIncidents,
   sourceMix,
 } from "../lib";
@@ -24,6 +27,9 @@ const queue = fx["/engine/queue"] as QueueSummary[];
 const p1 = queue.find((q) => q.priority === "P1")!;
 const p2 = queue.find((q) => q.priority === "P2")!;
 const p1Evidence = fx[`/engine/queue/${p1.draft_id}/evidence`] as Evidence;
+// The Overview asks the backend for anomalies only.
+const ANOMALIES_URL = "/engine/stream/signals?limit=12&min_score=0.6";
+const routes: Record<string, unknown> = { ...fx, [ANOMALIES_URL]: fx["/engine/stream/signals?limit=14"] };
 
 function mockApi(routes: Record<string, unknown>) {
   (useApi as jest.Mock).mockReturnValue({
@@ -98,6 +104,31 @@ describe("overview helpers", () => {
     expect(classifySignal({ ...base, anomaly_score: 0.1 }, queue).kind).toBe("normal");
   });
 
+  it("tells what became of an anomaly: incident, waiting, or expired", () => {
+    const base: CanonicalSignal = {
+      signal_id: "s", timestamp: "2026-09-26T10:00:00Z", source: "application_logs", environment: "prod", region: "ap-south-1",
+      service: "batch-report", component: null, signal_type: "error_log_burst", anomaly_score: 0.8, evidence: "", metadata: {},
+    };
+    expect(anomalyFate(base, queue, "2026-09-26T10:04:00Z")).toEqual({ kind: "waiting", minutesLeft: 11 });
+    expect(anomalyFate(base, queue, "2026-09-26T10:15:00Z")).toEqual({ kind: "expired" });
+    const joined = anomalyFate({ ...base, timestamp: p1.started_at, service: "payments-service" }, queue, p1.started_at);
+    expect(joined.kind).toBe("incident");
+  });
+
+  it("explains a quiet engine from its own counters", () => {
+    expect(quietReason({ signals_received: 0, anomalous: 0, pending: 0 })).toMatch(/only keepalives/);
+    expect(quietReason({ signals_received: 900, anomalous: 0, pending: 0 })).toMatch(/within its baseline/);
+    const r = quietReason({ signals_received: 900, anomalous: 5, pending: 2 });
+    expect(r).toMatch(/^5 anomalies found/);
+    expect(r).toMatch(/Time alone never links two signals\. 2 are still waiting/);
+  });
+
+  it("formats how long the engine has been watching", () => {
+    expect(formatDuration(30)).toBe("under a minute");
+    expect(formatDuration(3240)).toBe("54 min");
+    expect(formatDuration(7500)).toBe("2 h 05 min");
+  });
+
   it("formats offsets between timestamps", () => {
     expect(offset("2026-09-26T10:00:00Z", "2026-09-26T10:00:07Z")).toBe("+7s");
     expect(offset("2026-09-26T10:00:00Z", "2026-09-26T10:02:05Z")).toBe("+2m 05s");
@@ -105,23 +136,34 @@ describe("overview helpers", () => {
 });
 
 describe("LiveOverviewClient", () => {
-  beforeEach(() => mockApi(fx));
+  beforeEach(() => mockApi(routes));
 
-  it("tells the raw signals → anomalies → incidents story and asks for review", async () => {
+  it("leads with the decision a human owes, and one button to make it", async () => {
     renderPage();
-    expect(await screen.findByText("Nexus AIOps Intelligence Engine")).toBeInTheDocument();
-    expect(screen.getByText(/3\/3 streams connected/)).toBeInTheDocument();
-    expect(screen.getByText("Human review required")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Review P1 now/ })).toHaveAttribute("href", `/review/${p1.draft_id}`);
-    // Claude is off in the fixture: shown as a template fallback, not as broken.
-    expect(screen.getByText("AI drafting (template fallback)")).toBeInTheDocument();
-    expect(screen.queryByText(/Claude: off/)).not.toBeInTheDocument();
+    const hero = await screen.findByRole("region", { name: "Needs a decision" });
+    expect(within(hero).getByText(/2 incidents need your decision/)).toBeInTheDocument();
+    expect(within(hero).getByRole("link", { name: /Review P1 now/ })).toHaveAttribute("href", `/review/${p1.draft_id}`);
+    expect(within(hero).getByText("+1 more waiting")).toBeInTheDocument();
+    expect(within(hero).getByText(/Nothing is written to output\/tickets\//)).toBeInTheDocument();
   });
 
-  it("puts the P1 incident in focus with its origin, propagation and correlation evidence", async () => {
+  it("shows the five components once each, with live counts", async () => {
+    renderPage();
+    const strip = await screen.findByRole("region", { name: "Pipeline" });
+    ["C1", "C2", "C3", "C4", "C5"].forEach((c) => expect(within(strip).getByText(c)).toBeInTheDocument());
+    // A Grafana `ok` event is counted as an ignored recovery, not as a lost signal.
+    expect(within(strip).getByText("1 recovery ignored (state OK)")).toBeInTheDocument();
+    expect(within(strip).getByText("awaiting a reviewer")).toBeInTheDocument();
+    // Claude is off in the fixture: shown as a template fallback, not as broken.
+    expect(within(strip).getByText("template drafts (Claude off)")).toBeInTheDocument();
+  });
+
+  it("puts the P1 incident in focus with separate impact and confidence gauges", async () => {
     renderPage();
     const story = await screen.findByRole("region", { name: "Incident in focus" });
     expect(within(story).getByText("agency-db: DBConnectionCount cascading to 2 service(s)")).toBeInTheDocument();
+    expect(within(story).getByLabelText(/Impact severity · 0–100: \d+/)).toBeInTheDocument();
+    expect(within(story).getByLabelText(/Correlation confidence · 0–1: \d\.\d\d/)).toBeInTheDocument();
     expect(await within(story).findByText("Why these signals belong together")).toBeInTheDocument();
     expect(within(story).getByText(/Probable origin · 93% causal confidence/)).toBeInTheDocument();
     expect(within(story).getByText("symptom of agency-db")).toBeInTheDocument();
@@ -139,11 +181,29 @@ describe("LiveOverviewClient", () => {
     await waitFor(() => expect(within(story).getByText("comms-service: smtp_error_rate")).toBeInTheDocument());
   });
 
-  it("explains a feed signal when it is clicked", async () => {
+  it("lists only anomalies, each with what happened to it", async () => {
     renderPage();
-    const feed = (await screen.findByText("Live intelligence feed")).closest("section")!;
-    const first = within(feed).getAllByRole("button", { expanded: false })[0];
-    fireEvent.click(first);
-    expect(within(feed).getByText("Why this signal matters")).toBeInTheDocument();
+    const ledger = await screen.findByRole("region", { name: "Every anomaly, and what happened to it" });
+    const list = await within(ledger).findByRole("list", { name: "Anomalies" });
+    const rows = within(list).getAllByRole("button", { expanded: false });
+    expect(rows.length).toBeGreaterThan(0);
+    expect(within(list).queryByText("0.00")).not.toBeInTheDocument();
+    expect(within(list).getAllByText(/in P1 incident/).length).toBeGreaterThan(0);
+    fireEvent.click(rows[0]);
+    expect(within(ledger).getByText("What happened:")).toBeInTheDocument();
+  });
+
+  it("reads as all clear, with a reason, when nothing needs a human", async () => {
+    const status = fx["/engine/stream/status"] as { engine: Record<string, unknown> };
+    mockApi({
+      ...routes,
+      "/engine/queue": [],
+      "/engine/stream/status": { ...status, engine: { ...status.engine, incidents: 0, anomalous: 5, pending: 2 } },
+    });
+    renderPage();
+    const hero = await screen.findByRole("region", { name: "All clear" });
+    expect(within(hero).getByText(/All clear · 20 signals checked, 0 incidents raised/)).toBeInTheDocument();
+    expect(within(hero).getByText(/Time alone never links two signals/)).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Incident in focus" })).not.toBeInTheDocument();
   });
 });

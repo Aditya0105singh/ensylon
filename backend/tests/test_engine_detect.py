@@ -194,6 +194,15 @@ class TestDetectLogs:
         assert all(not s.is_anomaly for s in out)
         assert report.novel_templates == 0
 
+    def test_info_burst_is_not_flagged_even_with_a_baseline(self):
+        """Live false positive: "Premium collected" (INFO) 26x vs 0.3 expected
+        was scored 1.0. A busy healthy service is not an incident."""
+        quiet = [sig(severity=Severity.INFO, message="premium collected", seconds=i * 100) for i in range(3)]
+        _, _, state = detect(quiet)
+        burst = [sig(severity=Severity.INFO, message="premium collected", seconds=i) for i in range(BURST_MIN_COUNT + 20)]
+        out, _, _ = detect(burst, state)
+        assert all(not s.is_anomaly for s in out)
+
     def test_a_burst_of_a_known_template_is_flagged_once_baseline_exists(self):
         quiet = [sig(message="disk read slow", seconds=i * 100) for i in range(3)]
         _, _, state = detect(quiet)

@@ -364,6 +364,10 @@ export interface StreamStatus {
     incidents: number;
     noise: number;
     validation_rejections: number;
+    /** PII tokens replaced, by kind. Absent on older backends. */
+    redactions?: Record<string, number>;
+    /** Repeated signals folded before correlation. Absent on older backends. */
+    deduplicated?: number;
     ticks: number;
     stream_clock: string | null;
     last_signal_seconds_ago: number | null;

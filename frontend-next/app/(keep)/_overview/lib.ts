@@ -151,3 +151,44 @@ export function offset(fromIso: string, toIso: string): string {
 
 export const clockUTC = (iso: string) =>
   new Date(iso).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", second: "2-digit", timeZone: "UTC" });
+
+/** Must match PENDING_WINDOW_MIN in backend/app/engine/stream.py. */
+export const PENDING_WINDOW_MIN = 15;
+
+export type AnomalyFate =
+  | { kind: "incident"; incident: QueueSummary }
+  | { kind: "waiting"; minutesLeft: number }
+  | { kind: "expired" };
+
+/** What became of one anomalous signal: it joined an incident, it is still
+ * waiting (up to the pending window) for a structural partner, or it expired
+ * as noise. Measured against stream time, not wall time. */
+export function anomalyFate(s: CanonicalSignal, incidents: QueueSummary[], streamClock: string | null): AnomalyFate {
+  const c = classifySignal(s, incidents);
+  if (c.kind === "correlated" && c.incident) return { kind: "incident", incident: c.incident };
+  const now = streamClock ? Date.parse(streamClock) : Date.now();
+  const ageMin = (now - Date.parse(s.timestamp)) / 60000;
+  if (ageMin >= PENDING_WINDOW_MIN) return { kind: "expired" };
+  return { kind: "waiting", minutesLeft: Math.max(1, Math.ceil(PENDING_WINDOW_MIN - ageMin)) };
+}
+
+/** 3240 -> "54 min", 7500 -> "2 h 05 min". */
+export function formatDuration(seconds: number): string {
+  const m = Math.max(0, Math.floor(seconds / 60));
+  if (m < 1) return "under a minute";
+  if (m < 60) return `${m} min`;
+  return `${Math.floor(m / 60)} h ${String(m % 60).padStart(2, "0")} min`;
+}
+
+export const plural = (n: number, one: string, many = `${one}s`) => `${n.toLocaleString("en-US")} ${n === 1 ? one : many}`;
+
+/** One sentence on why the engine raised nothing, from its own counters. */
+export function quietReason(engine: { signals_received: number; anomalous: number; pending: number }): string {
+  if (engine.signals_received === 0) return "No signals yet, only keepalives. Silence raises nothing.";
+  if (engine.anomalous === 0) return "Every signal is within its baseline, so there is nothing to correlate.";
+  const waiting = engine.pending > 0 ? ` ${engine.pending} ${engine.pending === 1 ? "is" : "are"} still waiting for a partner.` : "";
+  return (
+    `${plural(engine.anomalous, "anomaly", "anomalies")} found, but none shared a service path, a dependency edge, ` +
+    `a component or a log template with another. Time alone never links two signals.${waiting}`
+  );
+}

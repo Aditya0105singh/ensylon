@@ -118,6 +118,7 @@ The suite runs in offline mode (`AIOPS_OFFLINE_DEMO=1`, `NEXUS_LIVE=0`, `CLAUDE_
 - **Logs:** Drain3 template mining, with the template miner kept across micro-batches.
   - A novel error template scores 0.8.
   - A burst (≥ 3 repeats and ≥ 4× the template's historical rate) scores `min(count/20 + 0.4, 1)`.
+  - Only WARN and ERROR lines can be novel or a burst. An INFO line repeating is a busy, healthy service, never an anomaly.
   - A lone ERROR/CRITICAL line scores 0.6.
 - **Threshold:** an incident must contain at least one signal with **anomaly_score ≥ 0.60** (validation check).
 
@@ -143,11 +144,12 @@ The suite runs in offline mode (`AIOPS_OFFLINE_DEMO=1`, `NEXUS_LIVE=0`, `CLAUDE_
    - Pending signals with no structural partner after 15 minutes of stream time expire as noise.
 
 ### C4 — Validation and scoring (`validate.py`, `severity.py`)
-- **Validation.** A candidate must pass all four checks, and failures are never raised:
+- **Validation.** A candidate must pass all five checks, and failures are never raised:
   - **Environment consistency:** mixed environments are split.
   - **Weak bridge:** with 5 or more signals, a single signal whose best link scores below 0.50 is a split point.
   - **Coherence:** at least 25% of pairs must be directly linked.
   - **Anomaly support:** the strongest signal must reach anomaly_score ≥ 0.60.
+  - **Independent evidence:** the signals must describe at least two distinct conditions (service + source + template or metric). One condition repeated is accepted only at error or alarm severity; repeats of a single warning are not corroboration. This is what keeps a cold start, when every warning is "novel", from raising routine repeats.
 - **Impact severity (0–100):** `100 × (0.40·blast + 0.35·criticality + 0.25·magnitude)`, where:
   - blast = `0.7·min(services/5,1) + 0.3·min(further dependents of the root/5,1)`;
   - criticality = the highest criticality among the involved services, from the brief's map (unknown = 50);

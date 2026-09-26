@@ -349,7 +349,9 @@ def _judge_log(
     # isn't one. Rather than guess, we fall back to severity: an error
     # repeating is a burst, an INFO line repeating is just a working system.
     if count >= BURST_MIN_COUNT:
-        if expected is not None and count >= expected * BURST_RATIO:
+        # INFO is never a burst, baseline or not: "Premium collected" 26 times
+        # is a busy, healthy service, not an incident.
+        if expected is not None and notable and count >= expected * BURST_RATIO:
             signal.is_anomaly = True
             signal.anomaly_score = min(count / 20.0 + 0.4, 1.0)
             signal.detection_reason = (

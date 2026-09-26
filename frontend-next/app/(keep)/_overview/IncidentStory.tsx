@@ -24,6 +24,7 @@ import {
   type PropagationStep,
 } from "./lib";
 import { PropagationMap } from "./PropagationMap";
+import { Gauge } from "./Gauge";
 
 const STATUS_LABEL: Record<string, { text: string; cls: string }> = {
   awaiting_review: { text: "Needs human review", cls: "bg-amber-100 text-amber-800 border-amber-200" },
@@ -200,7 +201,7 @@ function DecisionTrail({ q, ev, detail }: { q: QueueSummary; ev: Evidence; detai
   const steps = [
     { k: "Detected", v: `${ev.unique_signals} anomalous`, s: magnitude != null ? `peak score ${magnitude.toFixed(2)}` : "" },
     { k: "Correlated", v: `similarity ${total.toFixed(2)}`, s: `merge at ≥ ${MERGE_THRESHOLD}` },
-    { k: "Validated", v: `${passed}/${validation.length || 4} checks`, s: "env · bridge · coherence · anomaly" },
+    { k: "Validated", v: `${passed}/${validation.length || 5} checks`, s: "env · bridge · coherence · anomaly · independence" },
     { k: "Scored", v: `${q.priority} · impact ${impact(q)}`, s: `confidence ${q.correlation_confidence.toFixed(2)}` },
     { k: "Drafted", v: drafter === "template" ? "Template" : "Claude", s: drafter === "template" ? "Claude off: deterministic draft" : drafter },
     { k: "Human", v: q.status === "awaiting_review" ? "Awaiting review" : STATUS_LABEL[q.status]?.text ?? q.status, s: q.status === "published" && q.jira_key ? q.jira_key : "approve · edit · reject" },
@@ -276,15 +277,18 @@ export function IncidentStory({
           </Link>
         </header>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 rounded-xl bg-gray-50/80 border border-gray-100 p-3">
-          <Metric label="Impact severity" value={<>{impact(q)}<span className="text-sm text-gray-500">/100</span></>} bar={q.severity_score} color={color}
-            sub={ev ? ev.severity.factors.slice(0, 3).map((f) => `${f.label.split(" ")[0].toLowerCase()} ${f.value.toFixed(2)}`).join(" · ") : undefined} />
-          <Metric label="Correlation confidence" value={q.correlation_confidence.toFixed(2)} bar={q.correlation_confidence}
-            sub="density · topology · evidence" />
-          <Metric label="Correlated signals" value={<>{q.signal_count}<span className="text-sm text-gray-500"> distinct</span></>}
-            sub={`${raw} raw${streams != null ? ` from ${streams} stream${streams === 1 ? "" : "s"}` : ""}`} />
-          <Metric label="Alert compression" value={<>{raw}<span className="text-sm text-gray-500"> → 1</span></>}
-            sub="alerts a human would triage" />
+        <div className="grid grid-cols-2 md:grid-cols-[1fr_1fr_1.1fr] gap-4 rounded-xl bg-gray-50/80 border border-gray-100 p-3 items-center">
+          <Gauge fraction={q.severity_score} display={String(impact(q))} label="Impact severity · 0–100" color={color}
+            caption="blast radius · criticality · magnitude" />
+          <Gauge fraction={q.correlation_confidence} display={q.correlation_confidence.toFixed(2)} label="Correlation confidence · 0–1" color="#2563eb"
+            caption="density · topology · evidence" />
+          <div className="col-span-2 md:col-span-1 flex flex-col gap-3 md:border-l md:border-gray-200 md:pl-4">
+            <Metric label="Alert compression" value={<>{raw}<span className="text-sm text-gray-500"> raw → 1 incident</span></>}
+              sub={`${q.signal_count} distinct${streams != null ? ` from ${streams} stream${streams === 1 ? "" : "s"}` : ""}`} />
+            <p className="text-[10.5px] text-gray-500 leading-snug">
+              Impact and confidence are scored separately and never blended: a severe incident can still be a weak correlation.
+            </p>
+          </div>
         </div>
 
         {!ev ? (

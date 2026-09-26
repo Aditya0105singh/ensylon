@@ -59,10 +59,20 @@ export const useStreamMetrics = (options: SWRConfiguration = {}) => {
   );
 };
 
-/** GET /engine/stream/signals - recent canonical (redacted) signals. */
-export const useStreamSignals = (source: string | null = null, limit = 200, options: SWRConfiguration = {}) => {
+/** GET /engine/stream/signals - recent canonical (redacted) signals.
+ * `minScore` keeps only signals with anomaly_score at or above it. */
+export const useStreamSignals = (
+  source: string | null = null,
+  limit = 200,
+  options: SWRConfiguration = {},
+  minScore: number | null = null
+) => {
   const api = useApi();
-  const qs = new URLSearchParams({ limit: String(limit), ...(source ? { source } : {}) });
+  const qs = new URLSearchParams({
+    limit: String(limit),
+    ...(source ? { source } : {}),
+    ...(minScore != null ? { min_score: String(minScore) } : {}),
+  });
   return useSWR<{ total: number; signals: CanonicalSignal[] }>(
     api.isReady() ? `/engine/stream/signals?${qs}` : null,
     (url: string) => api.get(url),
