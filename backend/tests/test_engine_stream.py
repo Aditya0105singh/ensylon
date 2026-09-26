@@ -313,6 +313,39 @@ def test_an_open_incident_does_not_swallow_an_unrelated_neighbour():
     assert any(s.service == "carrier-service" for s in engine.pending)
 
 
+def test_the_real_simulator_burst_forms_three_separate_incidents():
+    """Recorded from the Ensylon simulator (redacted): in ten minutes, an
+    agency-db pool exhaustion cascading to payments and enrollment, a rulesforge
+    DB slowdown, and an unrelated comms-service SMTP outage - plus routine
+    warnings. They must stay three incidents, whether the signals arrive live
+    (2 s at a time) or as the backlog a stream sends on first connect (one
+    tick). Before the fixes this became one 8-service P1."""
+    from pathlib import Path
+
+    from app.engine import recording as rec
+
+    signals = rec.load(Path(__file__).parent / "fixtures" / "live_burst_2026-09-26.jsonl").signals
+
+    live = _engine()
+    rec.fast_forward(live, signals, 2.0)
+
+    backlog = _engine()
+    for s in signals:
+        backlog.offer(s.model_copy(deep=True))
+    backlog.tick()
+
+    def shape(engine):
+        return sorted(tuple(sorted(i.cluster.services)) for i in engine.result.incidents)
+
+    assert shape(backlog) == shape(live)
+    incidents = shape(live)
+    assert ("agency-db", "enrollment-service", "payments-service") in incidents
+    assert ("comms-service",) in incidents
+    assert ("rulesforge",) in incidents
+    assert all(len(services) <= 3 for services in incidents)
+    assert not any("carrier-service" in services for services in incidents)   # routine warnings
+
+
 def test_correlating_unrelated_pending_signals_does_not_crash():
     """No admissible pair leaves an empty distance matrix; sklearn used to raise
     IndexError on it, failing every live tick from then on."""

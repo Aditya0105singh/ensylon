@@ -42,11 +42,25 @@ from .review import ReviewQueue
 from .severity import score_incident
 from .signal import Signal, SignalSource
 
+# A tick spanning more event time than this is processed in slices of it.
+SLICE_SECONDS = 2.0
 PENDING_WINDOW_MIN = 15.0      # matches correlate.WINDOW_MAX_MIN
 DEDUP_BUCKET_MIN = 5.0         # same fingerprint within this long is one condition
 TIMELINE_MINUTES = 180         # per-minute history kept for the charts
 REPEAT_TRACKED = 2000          # distinct conditions tracked for the dedup view
 CANONICAL_HISTORY = 5000       # recent canonical records kept for the feed
+
+
+def _slices(batch: list[Signal], seconds: float) -> list[list[Signal]]:
+    """Consecutive windows of `seconds` of event time (batch already sorted)."""
+    out: list[list[Signal]] = []
+    start: datetime | None = None
+    for s in batch:
+        if start is None or (s.timestamp - start).total_seconds() >= seconds:
+            out.append([])
+            start = s.timestamp
+        out[-1].append(s)
+    return out
 
 
 class StreamEngine:
@@ -76,6 +90,7 @@ class StreamEngine:
         self.anomalous = 0
         self.ticks = 0
         self._clock_event: datetime | None = None
+        self._clock_hold: datetime | None = None
         self._clock_wall: float | None = None
         self.last_signal_wall: float | None = None
         # drafts created or changed since the narrator last looked
@@ -96,7 +111,10 @@ class StreamEngine:
             self._clock_wall = time.time()
 
     def now(self) -> datetime:
-        """The stream clock: latest event time seen, advanced by wall time since."""
+        """The stream clock: latest event time seen, advanced by wall time since.
+        While a backlog is replayed slice by slice, it is held at the slice's time."""
+        if self._clock_hold is not None:
+            return self._clock_hold
         if self._clock_event is None or self._clock_wall is None:
             return datetime.now(timezone.utc)
         return self._clock_event + timedelta(seconds=time.time() - self._clock_wall)
@@ -122,14 +140,39 @@ class StreamEngine:
     # -- processing -----------------------------------------------------------
 
     def tick(self) -> dict[str, Any]:
-        """Process everything queued since the last tick. Call under the engine lock."""
+        """Process everything queued since the last tick. Call under the engine lock.
+
+        A tick normally holds a couple of seconds of events. When it holds more
+        (the backlog a stream sends on first connect, or a resume), it is
+        processed in SLICE_SECONDS slices of event time, with the clock held at
+        each slice, so incidents form exactly as they would have if the same
+        events had arrived live. Without this, one big batch is clustered all
+        at once and unrelated failures in the same ten minutes chain together.
+        """
         with self._inbox_lock:
             batch, self._inbox = self._inbox, []
         self.ticks += 1
         summary: dict[str, Any] = {"received": len(batch), "attached": 0, "new_incidents": 0, "expired": 0}
 
+        batch.sort(key=lambda s: s.timestamp)
+        slices = _slices(batch, SLICE_SECONDS)
+        try:
+            for i, part in enumerate(slices):
+                last = i == len(slices) - 1
+                self._clock_hold = None if last else part[-1].timestamp
+                self._ingest(part, summary)
+                summary["new_incidents"] += self._form_incidents()
+                summary["expired"] += self._expire_pending()
+        finally:
+            self._clock_hold = None
+        if not slices:
+            summary["new_incidents"] += self._form_incidents()
+            summary["expired"] += self._expire_pending()
+        return summary
+
+    def _ingest(self, batch: list[Signal], summary: dict[str, Any]) -> None:
+        """Count, deduplicate, score and route one slice of signals."""
         if batch:
-            batch.sort(key=lambda s: s.timestamp)
             self.report.signals_ingested += len(batch)
             for s in batch:
                 raw = str(getattr(s.source, "value", s.source))
@@ -166,10 +209,6 @@ class StreamEngine:
                     summary["repeats"] = summary.get("repeats", 0) + 1
                 else:
                     self.pending.append(s)
-
-        summary["new_incidents"] = self._form_incidents()
-        summary["expired"] = self._expire_pending()
-        return summary
 
     # -- metrics --------------------------------------------------------------
 
