@@ -1,34 +1,45 @@
+# Backend only. The frontend (frontend-next) deploys to Vercel, not here -
+# see frontend-next/.env.local.example for the vars it needs, chief among
+# them API_URL pointing at this service's public URL.
 services:
   - type: web
-    name: alertlens-backend
+    name: nexus-aiops-backend
     runtime: python
     plan: free
     region: singapore
     rootDir: backend
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
-    # /health, not /pipeline: every other route requires the API key, and a
+    # /health, not /engine/*: every other route requires the API key, and a
     # health check that has to authenticate is a health check that fails for
     # the wrong reasons.
     healthCheckPath: /health
     autoDeploy: true
-    # Render attaches persistent disks only to paid instances. On the free plan
-    # the filesystem is wiped whenever the service sleeps, so the engine's event
-    # log is lost; ALERTLENS_AUTOSEED_GOLDEN below re-creates the demo run on
-    # every cold start so visitors never land on an empty engine.
-    disk:
-      name: alertlens-data
-      mountPath: /opt/render/project/src/backend
-      sizeGB: 1
+    # No disk: Render only attaches persistent disks on paid plans, so one
+    # here would either be rejected or silently do nothing. On the free
+    # plan, a sleep/restart wipes recordings/ and the engine reconnects to
+    # the live streams cold - no incidents lost mid-review, just no resume
+    # across a sleep. Upgrade the plan and add a disk if that matters later.
     envVars:
       - key: PYTHON_VERSION
         value: "3.11.9"
       # Generated once by Render, then copied into the frontend's
-      # ALERTLENS_API_KEY. Without it this service is reachable but refuses
-      # every non-local request, which is the intended fail-closed default.
+      # ALERTLENS_API_KEY on Vercel. Without it this service is reachable but
+      # refuses every non-local request, which is the intended fail-closed
+      # default - the frontend calls it server-side, never from the browser.
       - key: ALERTLENS_API_KEY
         generateValue: true
-      # Re-run the deterministic golden scenario on startup when there is no
-      # event log to restore (see the disk note above). Pages nobody.
-      - key: ALERTLENS_AUTOSEED_GOLDEN
+      # Claude drafting (C5). Set once in the Render dashboard when the
+      # Blueprint is first created - never committed, never in this file.
+      # Without it, tickets fall back to the deterministic template and
+      # everything else works unchanged.
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Explicit, not just relying on the code's default: the evaluated run
+      # must talk to the real Nexus streams and nothing else.
+      - key: NEXUS_LIVE
         value: "1"
+      # Explicit, not just relying on the code's default: the three streams
+      # are the only allowed runtime input. Never "1" for the evaluated run.
+      - key: AIOPS_OFFLINE_DEMO
+        value: "0"
