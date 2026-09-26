@@ -406,3 +406,8 @@ thead th, .tremor-TableHeaderCell-root {
 @media (prefers-reduced-motion: reduce) {
   .hero-card, .pipeline-stage, .gauge-arc, .attention-bell, .kpi-pulse-soft { animation: none !important; }
 }
+
+/* Signal feed: rows that arrived since the last refresh */
+@keyframes feed-fresh { from { background-color: #dcfce7; } to { background-color: transparent; } }
+.feed-fresh { animation: feed-fresh 2.4s ease-out; }
+@media (prefers-reduced-motion: reduce) { .feed-fresh { animation: none !important; } }
