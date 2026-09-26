@@ -97,6 +97,9 @@ class StreamEngine:
         self.last_signal_wall: float | None = None
         # drafts created or changed since the narrator last looked
         self.touched: set[str] = set()
+        # When each incident was raised, on the stream clock: event time, so an
+        # incident rebuilt after a restart keeps its original raised time.
+        self.raised_at: dict[str, datetime] = {}
         # Metrics for the dashboard: per-minute volume by stream (event time),
         # anomaly-score histogram, and the conditions that repeat most.
         self.timeline: dict[str, dict[str, int]] = {}
@@ -332,6 +335,7 @@ class StreamEngine:
             incident = IncidentResult(cluster, analysed, severity, draft)
             self.result.incidents.append(incident)
             self.queue.submit(draft)
+            self.raised_at[draft.draft_id] = self.now()
             members = {s.id for s in cluster.signals}
             self.pending = [s for s in self.pending if s.id not in members]
             self.report.incidents_formed += 1
