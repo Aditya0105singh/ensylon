@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useRef } from "react";
 import { Session } from "next-auth";
+import { toast } from "react-toastify";
 import { HiOutlineBell, HiOutlineCheckCircle } from "react-icons/hi2";
 import { Search } from "@/components/navbar/Search";
 import { UserInfo } from "@/components/navbar/UserInfo";
 import { useEngineQueue, useStreamStatus } from "@/entities/engine/useEngine";
+
+const TOAST_BY_PRIORITY = { P1: toast.error, P2: toast.warning, P3: toast.info, P4: toast.info } as const;
 
 /**
  * Horizontal bar above the page content: search, real pipeline-health status,
@@ -15,6 +20,11 @@ import { useEngineQueue, useStreamStatus } from "@/entities/engine/useEngine";
 export function Topbar({ session }: { session: Session | null }) {
   const { data: status } = useStreamStatus();
   const { data: queue } = useEngineQueue();
+  const router = useRouter();
+  // What awaiting_review draft ids we've already popped up for - null until
+  // the first poll, so page load never toasts for every incident already
+  // sitting in the queue, only ones that arrive from here on.
+  const seen = useRef<Set<string> | null>(null);
 
   // A real read on the live streams, not a decoration: how many of the three
   // SSE connections are up right now. Anything else is reported as it is.
@@ -26,6 +36,22 @@ export function Topbar({ session }: { session: Session | null }) {
   // The bell counts drafts waiting for a human decision: the one number an
   // on-call reviewer actually needs, and it clears itself as they are decided.
   const bellCount = (queue ?? []).filter((q) => q.status === "awaiting_review").length;
+
+  useEffect(() => {
+    if (!queue) return;
+    const awaiting = queue.filter((q) => q.status === "awaiting_review");
+    if (seen.current === null) {
+      seen.current = new Set(awaiting.map((q) => q.draft_id));
+      return;
+    }
+    for (const q of awaiting) {
+      if (seen.current.has(q.draft_id)) continue;
+      (TOAST_BY_PRIORITY[q.priority] ?? toast.info)(`${q.priority} incident: ${q.title}`, {
+        onClick: () => router.push("/review#review-queue"),
+      });
+    }
+    seen.current = new Set(awaiting.map((q) => q.draft_id));
+  }, [queue, router]);
 
   return (
     // .page-container pads its scroll area by 16px (24px on xl), so a plain
