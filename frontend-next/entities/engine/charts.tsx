@@ -56,13 +56,13 @@ export function StackedColumns({
   const max = Math.max(1, ...rows.map((r) => Math.max(r.parts.reduce((a, p) => a + p.value, 0), r.marker ?? 0)));
   const bw = (W - pad.l - pad.r) / Math.max(rows.length, 1);
   const y = (v: number) => pad.t + (height - pad.t - pad.b) * (1 - v / max);
-  const ticks = [0, Math.ceil(max / 2), max];
+  const ticks = Array.from(new Set([0, Math.ceil(max / 2), max]));
   const every = Math.max(1, Math.ceil(rows.length / 8));
 
   return (
     <svg viewBox={`0 0 ${W} ${height}`} className="w-full" role="img" aria-label="Signals per minute by stream">
-      {ticks.map((t) => (
-        <g key={t}>
+      {ticks.map((t, index) => (
+        <g key={`${t}-${index}`}>
           <line x1={pad.l} x2={W - pad.r} y1={y(t)} y2={y(t)} stroke="#e5e7eb" strokeWidth={1} />
           <text x={pad.l - 4} y={y(t) + 3} textAnchor="end" fontSize="9" fill="#6b7280">{t}</text>
         </g>
