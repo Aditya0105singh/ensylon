@@ -446,3 +446,45 @@ export interface StreamMetrics {
   top_repeats: { service: string; component: string | null; source: string; evidence: string; count: number; first: string; last: string }[];
   priorities: Record<string, number>;
 }
+
+/** Who took an action in the incident archive. "engine" for raised/updated. */
+export interface ArchiveActor {
+  name: string;
+  email: string | null;
+}
+
+/** GET /engine/history/{id} - one row of the append-only sign-off trail. */
+export interface ArchiveAuditEntry {
+  seq: number;
+  at: string;
+  action: "raised" | "updated" | "approve" | "edit_and_approve" | "reject" | "resolve" | "merge" | string;
+  actor: ArchiveActor;
+  note: string;
+  changes: Record<string, { before: unknown; after: unknown }> | null;
+}
+
+/** GET /engine/history - an incident as archived, across sessions and restarts. */
+export interface ArchivedIncident {
+  draft_id: string;
+  title: string;
+  priority: Priority;
+  status: DraftStatus;
+  severity_score: number;
+  correlation_confidence: number;
+  root_cause_service: string | null;
+  affected_services: string[];
+  signal_count: number;
+  started_at: string;
+  raised_at: string;
+  updated_at: string;
+  decided_at: string | null;
+  decided_by: ArchiveActor | null;
+  ticket_key: string | null;
+  source: string | null;
+}
+
+export interface ArchivedIncidentDetail extends ArchivedIncident {
+  detail: DraftDetail;
+  evidence: Evidence | null;
+  audit: ArchiveAuditEntry[];
+}

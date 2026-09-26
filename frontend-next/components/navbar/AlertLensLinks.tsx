@@ -8,7 +8,7 @@ import { IoChevronUp } from "react-icons/io5";
 import { IconType } from "react-icons/lib";
 import clsx from "clsx";
 import { IoMdGitMerge } from "react-icons/io";
-import { TbTopologyRing, TbTimeline, TbChartDots3 } from "react-icons/tb";
+import { TbTopologyRing, TbTimeline, TbChartDots3, TbHistory } from "react-icons/tb";
 import { LuWorkflow, LuGauge, LuBrainCircuit } from "react-icons/lu";
 import { VscDebugDisconnect } from "react-icons/vsc";
 import {
@@ -63,6 +63,7 @@ const SECTIONS: NavSection[] = [
   {
     title: "ANALYSIS",
     links: [
+      { href: "/history", label: "Incident History", icon: TbHistory, testId: "history" },
       { href: "/timemachine", label: "Time Machine", icon: TbTimeline, testId: "timemachine" },
       { href: "/deduplication", label: "Deduplication", icon: IoMdGitMerge, testId: "deduplication" },
       { href: "/evaluation", label: "Evaluation", icon: LuBrainCircuit, testId: "evaluation" },

@@ -21,6 +21,8 @@ import type {
   CanonicalSignal,
   ValidationRejection,
   ServiceGraph,
+  ArchivedIncident,
+  ArchivedIncidentDetail,
 } from "./types";
 
 export const REPORT_KEY = "/engine/report";
@@ -104,6 +106,34 @@ export const useServiceGraph = (options: SWRConfiguration = {}) => {
     api.isReady() ? "/engine/graph" : null,
     (url: string) => api.get(url),
     { refreshInterval: 5000, ...options }
+  );
+};
+
+/** GET /engine/history - archived incidents across sessions, newest first. */
+export const useIncidentHistory = (
+  filters: { hours?: number | null; status?: string | null; q?: string } = {},
+  options: SWRConfiguration = {}
+) => {
+  const api = useApi();
+  const qs = new URLSearchParams({
+    ...(filters.hours ? { hours: String(filters.hours) } : {}),
+    ...(filters.status ? { status: filters.status } : {}),
+    ...(filters.q?.trim() ? { q: filters.q.trim() } : {}),
+  }).toString();
+  return useSWR<ArchivedIncident[]>(
+    api.isReady() ? `/engine/history${qs ? `?${qs}` : ""}` : null,
+    (url: string) => api.get(url),
+    { refreshInterval: 10000, ...options }
+  );
+};
+
+/** GET /engine/history/{id} - snapshot, evidence and the full sign-off trail. */
+export const useArchivedIncident = (draftId: string | null, options: SWRConfiguration = {}) => {
+  const api = useApi();
+  return useSWR<ArchivedIncidentDetail>(
+    api.isReady() && draftId ? `/engine/history/${draftId}` : null,
+    (url: string) => api.get(url),
+    { refreshInterval: 10000, ...options }
   );
 };
 
